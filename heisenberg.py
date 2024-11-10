@@ -23,7 +23,7 @@ def get_n_steps(t):
 
 
 class HeisenbergModel:
-    def __init__(self, backend, n_qubits, Js):
+    def __init__(self, n_qubits, Js, backend=None):
         self.n_qubits = n_qubits
         self.Js = Js
         self.first_half_pairs = [(i, i + 1) for i in range(0, self.n_qubits - 1, 2)]
@@ -56,27 +56,6 @@ class HeisenbergModel:
         )
 
         return hamiltonian.simplify().to_matrix()
-
-    # def get_hamiltonian(self):
-    #     # Pauli matrices
-    #     pauli_matrices = {
-    #         "X": np.array([[0, 1], [1, 0]]),
-    #         "Y": np.array([[0, -1j], [1j, 0]]),
-    #         "Z": np.array([[1, 0], [0, -1]]),
-    #     }
-    #     H = np.zeros((2**self.n_qubits, 2**self.n_qubits), dtype=complex)
-
-    #     for (i, j), J in zip(self.pairs, self.Js):
-    #         for pauli in pauli_matrices.values():
-    #             op_i = np.kron(
-    #                 np.eye(2**i), np.kron(pauli, np.eye(2 ** (self.n_qubits - i - 1)))
-    #             )
-    #             op_j = np.kron(
-    #                 np.eye(2**j), np.kron(pauli, np.eye(2 ** (self.n_qubits - j - 1)))
-    #             )
-    #             H += J * (op_i @ op_j)
-
-    #     return H
 
     def add_heisenberg_interaction(self, qc, pairs, Js, t):
         for (i, j), J in zip(pairs, Js):
@@ -183,27 +162,24 @@ class HeisenbergModel:
         pm = generate_preset_pass_manager(backend=self.backend, optimization_level=1)
         isa_qc = pm.run(qc)
 
-        if t == 0:
-            print(" > Circuit for t=0")
-            qc.draw("mpl")
-            isa_qc.draw("mpl", idle_wires=False)
-        
+        # if t == 0:
+        #     print(" > Circuit for t=0")
+        #     qc.draw("mpl")
+        #     isa_qc.draw("mpl", idle_wires=False)
+
         # Only necessary for Estimator
-        isa_obs = 
+        # isa_obs =
 
         return isa_qc
 
-        # job = self.sampler.run([isa_qc])
-        # result = job.result()
-        # pub_result = result[0]
 
-        # if "0" * self.n_qubits not in pub_result.data.meas.get_counts():
-        #     print(" > No counts for |0...0> state")
-        #     prob0 = 0
-        # else:
-        #     prob0 = (
-        #         pub_result.data.meas.get_counts()["0" * self.n_qubits]
-        #         / pub_result.data.meas.num_shots
-        #     )
+def get_prob0(result, n_qubits):
+    if "0" * n_qubits not in result.data.meas.get_counts():
+        print(" > No counts for |0...0> state")
+        prob0 = 0
+    else:
+        prob0 = (
+            result.data.meas.get_counts()["0" * n_qubits] / result.data.meas.num_shots
+        )
 
-        # return prob0
+    return prob0
