@@ -11,13 +11,16 @@ from qiskit_ibm_runtime import (
 )
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 from qiskit_aer import AerSimulator
+from qiskit.visualization import plot_circuit_layout
 
 
 def get_n_steps(t):
     # interval per division
-    max_delta_t = 0.1
+    # max_delta_t = 0.1
 
-    n_steps = int(t / max_delta_t) + 1
+    # n_steps = int(t / max_delta_t) + 1
+    # print(f" > Total time: {t}, n_steps: {n_steps}")
+    n_steps = 1
 
     return n_steps
 
@@ -164,22 +167,26 @@ class HeisenbergModel:
 
         # if t == 0:
         #     print(" > Circuit for t=0")
-        #     qc.draw("mpl")
+        #     qc.decompose().draw("mpl")
         #     isa_qc.draw("mpl", idle_wires=False)
-
-        # Only necessary for Estimator
-        # isa_obs =
-
-        return isa_qc
+        #     plt.show()
+        return qc, isa_qc
 
 
-def get_prob0(result, n_qubits):
-    if "0" * n_qubits not in result.data.meas.get_counts():
+def get_prob0(result, n_qubits, mit=None):
+    meas_counts = result.data.meas.get_counts()
+    num_shots = result.data.meas.num_shots
+    prob0_mit = 0
+
+    if "0" * n_qubits not in meas_counts:
         print(" > No counts for |0...0> state")
-        prob0 = 0
+        prob0_nmit = 0
     else:
-        prob0 = (
-            result.data.meas.get_counts()["0" * n_qubits] / result.data.meas.num_shots
-        )
+        prob0_nmit = meas_counts["0" * n_qubits] / num_shots
 
-    return prob0
+    if mit is not None:
+        quasis = mit.apply_correction(meas_counts, range(n_qubits))
+        prob0_mit = quasis["0" * n_qubits]
+        return prob0_nmit, prob0_mit
+    else:
+        return prob0_nmit
