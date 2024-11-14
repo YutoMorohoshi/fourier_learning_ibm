@@ -1,5 +1,5 @@
 .venv/
 .python-version
 .DS_Store
-job_ids_sim.txt
-job_ids_qpu.txt
+__pycache__/
+logs.log
