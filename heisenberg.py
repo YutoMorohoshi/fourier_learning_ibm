@@ -145,15 +145,17 @@ class HeisenbergModel:
         # qc.barrier()
 
         # Apply time-evolution operator
-        self.add_heisenberg_interaction(qc, self.first_half_pairs, first_half_Js, t / 2)
-        for _ in range(n_steps - 1):
-            self.add_heisenberg_interaction(qc, self.first_half_pairs, first_half_Js, t)
-            self.add_heisenberg_interaction(
-                qc, self.second_half_pairs, second_half_Js, t
-            )
-        self.add_heisenberg_interaction(qc, self.second_half_pairs, second_half_Js, t)
-        self.add_heisenberg_interaction(qc, self.first_half_pairs, first_half_Js, t / 2)
+        # self.add_heisenberg_interaction(qc, self.first_half_pairs, first_half_Js, t / 2)
+        # for _ in range(n_steps - 1):
+        #     self.add_heisenberg_interaction(qc, self.first_half_pairs, first_half_Js, t)
+        #     self.add_heisenberg_interaction(
+        #         qc, self.second_half_pairs, second_half_Js, t
+        #     )
+        # self.add_heisenberg_interaction(qc, self.second_half_pairs, second_half_Js, t)
+        # self.add_heisenberg_interaction(qc, self.first_half_pairs, first_half_Js, t / 2)
         # qc.barrier()
+
+        # To Do: Implement Trotterization
 
         # Uncompute GHZ state
         qc.compose(self.get_ghz_circuit(phase=phase).inverse(), inplace=True)
@@ -165,11 +167,6 @@ class HeisenbergModel:
         pm = generate_preset_pass_manager(backend=self.backend, optimization_level=1)
         isa_qc = pm.run(qc)
 
-        # if t == 0:
-        #     print(" > Circuit for t=0")
-        #     qc.decompose().draw("mpl")
-        #     isa_qc.draw("mpl", idle_wires=False)
-        #     plt.show()
         return qc, isa_qc
 
 
