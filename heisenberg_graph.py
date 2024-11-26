@@ -11,10 +11,9 @@ from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 def get_n_steps(t):
     # interval per division
-    # max_delta_t = 0.1
+    # max_delta_t = 0.5
 
     # n_steps = int(t / max_delta_t) + 1
-    # print(f" > Total time: {t}, n_steps: {n_steps}")
     n_steps = 1
 
     return n_steps
@@ -67,6 +66,7 @@ def get_graph(n_qubits, rng, graph_type="tree"):
         # G.edges[edge]["J"] = 1
 
     # エッジに 'interaction_order' 属性を追加
+    """
     if graph_type == "tree":
         if n_qubits == 10:
             interaction_orders = [
@@ -104,6 +104,7 @@ def get_graph(n_qubits, rng, graph_type="tree"):
     for i in range(len(interaction_orders)):
         for j in range(len(interaction_orders[i])):
             G.edges[interaction_orders[i][j]]["interaction_order"] = i
+    """
 
     # エッジに 'cnot' 属性を追加
     if graph_type == "tree":
@@ -231,18 +232,14 @@ def get_prob0(result, n_qubits, mit=None):
         return prob0_nmit
 
 
-def extract_probs(probs, successful_ids):
+def extract_probs(probs_dict, successful_samples):
     probs_extracted = []
 
-    # Extract the probabilities of the successful samples
-    for sample_id, probs in probs.items():
-        if sample_id in successful_ids:
+    for sample_id, probs in probs_dict.items():
+        if sample_id in successful_samples:
             probs_extracted.append(probs.values())
 
-    # Flatten the list
-    probs_extracted = list(itertools.chain.from_iterable(probs_extracted))
-
-    return probs_extracted
+    return list(itertools.chain.from_iterable(probs_extracted))
 
 
 class HeisenbergModel:
@@ -250,10 +247,25 @@ class HeisenbergModel:
         self.n_qubits = n_qubits
         self.G = graph
         self.Js = [self.G.edges[edge]["J"] for edge in self.G.edges]
-        # self.ghz_qubits = [node for node in self.G.nodes if self.G.nodes[node]["GHZ"]]
 
         self.H, self.eigvals = self.get_hamiltonian_and_eigvals()
         self.backend = backend
+
+        # first_half_pairs の始まりは、n_qubits を 4 で割った余りが 0 なら 1, そうでなければ 0
+        if self.n_qubits % 4 == 0:
+            self.first_half_pairs = [(i, i + 1) for i in range(1, self.n_qubits - 1, 2)]
+            self.first_Js = [self.Js[i] for i in range(1, self.n_qubits - 1, 2)]
+            self.second_half_pairs = [
+                (i, i + 1) for i in range(0, self.n_qubits - 1, 2)
+            ]
+            self.second_Js = [self.Js[i] for i in range(0, self.n_qubits - 1, 2)]
+        else:
+            self.first_half_pairs = [(i, i + 1) for i in range(0, self.n_qubits - 1, 2)]
+            self.first_Js = [self.Js[i] for i in range(0, self.n_qubits - 1, 2)]
+            self.second_half_pairs = [
+                (i, i + 1) for i in range(1, self.n_qubits - 1, 2)
+            ]
+            self.second_Js = [self.Js[i] for i in range(1, self.n_qubits - 1, 2)]
 
     def get_pauli_strings(self):
         paulis = ["X", "Y", "Z"]
@@ -270,7 +282,7 @@ class HeisenbergModel:
 
     def get_hamiltonian_and_eigvals(self):
         pauli_strings = self.get_pauli_strings()
-        coefficients = np.repeat(self.Js, 3)
+        coefficients = np.repeat(self.Js, 3)  # Js を各パウリ演算子に対応させる
 
         H = SparsePauliOp.from_list(
             [(pauli_string, J) for pauli_string, J in zip(pauli_strings, coefficients)]
@@ -279,35 +291,25 @@ class HeisenbergModel:
         min_eigval = np.min(eigvals)
 
         # Shift the Hamiltonian so that the minimum eigenvalue is 0
-        # print(f" > Minimum eigenvalue (before shift): {min_eigval}")
-        H = H - min_eigval * SparsePauliOp.from_list([("I" * self.n_qubits, 1)])
+        # H = H - min_eigval * SparsePauliOp.from_list([("I" * self.n_qubits, 1)])
+        # shifted_eigvals = eigvals - min_eigval
+        # return H.simplify().to_matrix(), shifted_eigvals, min_eigval
 
-        shifted_eigvals = eigvals - min_eigval
+        return H.simplify().to_matrix(), eigvals
 
-        return H.simplify().to_matrix(), shifted_eigvals
-        # return H.simplify().to_matrix(), eigvals
+    def add_heisenberg_interaction(self, qc, pairs, Js, t):
+        for (i, j), J in zip(pairs, Js):
+            # Function to add Heisenberg interactions between specific pairs of qubits
+            # this corresponds to exp(-i J t (X_i X_j + Y_i Y_j + Z_i Z_j))
+            theta = 2 * J * t
+            qc.cx(i, j)
+            qc.rx(theta, i)
+            qc.rz(theta, j)
 
-    def add_heisenberg_interaction(self, qc, t):
-        # 'interaction_order' に従って、interaction をかける順番を決める
-        max_order = max(
-            [self.G.edges[edge]["interaction_order"] for edge in self.G.edges]
-        )
-        for i in range(max_order + 1):
-            for j, k in self.G.edges:
-                if self.G.edges[(j, k)]["interaction_order"] == i:
-                    J = self.G.edges[(j, k)]["J"]
+            # Note: order of qubits
+            qc.rzx(-theta, j, i)
 
-                    # Function to add Heisenberg interactions between specific pairs of qubits
-                    # this corresponds to exp(-i J t (X_j X_k + Y_j Y_k + Z_j Z_k))
-                    theta = 2 * J * t
-                    qc.cx(j, k)
-                    qc.rx(theta, j)
-                    qc.rz(theta, k)
-
-                    # Note: order of qubits
-                    qc.rzx(-theta, k, j)
-
-                    qc.cx(j, k)
+            qc.cx(i, j)
 
     def get_ghz_circuit(self, phase=0):
         """Prepare the GHZ state on the first half of the qubits.
@@ -392,7 +394,15 @@ class HeisenbergModel:
         qc.compose(self.get_ghz_circuit(phase=0), inplace=True)
         # qc.barrier()
 
-        self.add_heisenberg_interaction(qc, t)
+        # Apply time-evolution
+        self.add_heisenberg_interaction(qc, self.first_half_pairs, self.first_Js, t / 2)
+        self.add_heisenberg_interaction(qc, self.second_half_pairs, self.second_Js, t)
+        for _ in range(n_steps - 1):
+            self.add_heisenberg_interaction(qc, self.first_half_pairs, self.first_Js, t)
+            self.add_heisenberg_interaction(
+                qc, self.second_half_pairs, self.second_Js, t
+            )
+        self.add_heisenberg_interaction(qc, self.first_half_pairs, self.first_Js, t / 2)
         # qc.barrier()
 
         # Uncompute GHZ state
