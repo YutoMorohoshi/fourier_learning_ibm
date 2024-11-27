@@ -248,7 +248,11 @@ class HeisenbergModel:
         self.G = graph
         self.Js = [self.G.edges[edge]["J"] for edge in self.G.edges]
 
-        self.H, self.eigvals = self.get_hamiltonian_and_eigvals()
+        # self.H, self.eigvals = self.get_hamiltonian_and_eigvals()
+        # self.H = self.get_hamiltonian()
+
+        # sparse matrix
+        self.H = self.get_sparse_hamiltonian()
         self.backend = backend
 
         # first_half_pairs の始まりは、n_qubits を 4 で割った余りが 0 なら 1, そうでなければ 0
@@ -280,22 +284,32 @@ class HeisenbergModel:
 
         return strings
 
-    def get_hamiltonian_and_eigvals(self):
+    def get_hamiltonian(self):
         pauli_strings = self.get_pauli_strings()
         coefficients = np.repeat(self.Js, 3)  # Js を各パウリ演算子に対応させる
 
         H = SparsePauliOp.from_list(
             [(pauli_string, J) for pauli_string, J in zip(pauli_strings, coefficients)]
         )
-        eigvals = np.linalg.eigvalsh(H)
-        min_eigval = np.min(eigvals)
 
         # Shift the Hamiltonian so that the minimum eigenvalue is 0
         # H = H - min_eigval * SparsePauliOp.from_list([("I" * self.n_qubits, 1)])
         # shifted_eigvals = eigvals - min_eigval
         # return H.simplify().to_matrix(), shifted_eigvals, min_eigval
 
-        return H.simplify().to_matrix(), eigvals
+        return H.simplify().to_matrix()
+
+    def get_sparse_hamiltonian(self):
+        pauli_strings = self.get_pauli_strings()
+        coefficients = np.repeat(self.Js, 3)  # Js を各パウリ演算子に対応させる
+
+        H = SparsePauliOp.from_list(
+            [(pauli_string, J) for pauli_string, J in zip(pauli_strings, coefficients)]
+        )
+
+        sparse_H = scipy.sparse.csr_matrix(H.to_matrix())
+
+        return sparse_H
 
     def add_heisenberg_interaction(self, qc, pairs, Js, t):
         for (i, j), J in zip(pairs, Js):
@@ -361,7 +375,8 @@ class HeisenbergModel:
         # Compute the exact evolution of the Heisenberg model using the GHZ state.
         initial_state = np.zeros(2**self.n_qubits, dtype=complex)
         initial_state[0] = 1
-        U = scipy.linalg.expm(-1j * self.H * t)
+        # U = scipy.linalg.expm(-1j * self.H * t)  # for dense matrix
+        U = scipy.sparse.linalg.expm(-1j * self.H * t)  # for sparse matrix
 
         ghz_circuit = self.get_ghz_circuit(phase=0)
         ghz_unitary = np.kron(
