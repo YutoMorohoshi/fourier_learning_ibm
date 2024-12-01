@@ -288,6 +288,7 @@ class HeisenbergModel:
 
                 # Convert to little-endian for Qiskit's SparsePauliOp
                 # See: https://docs.quantum.ibm.com/api/qiskit/qiskit.quantum_info.SparsePauliOp#from_list
+                # これは必要
                 pauli_string.reverse()
 
                 strings.append("".join(pauli_string))
@@ -371,12 +372,22 @@ class HeisenbergModel:
 
         U = scipy.sparse.linalg.expm(-1j * self.H.to_matrix(sparse=True) * t)
 
+        # 有望
+        # H = Operator(self.H).reverse_qargs().to_matrix()
+        # H = scipy.sparse.csr_matrix(H)
+        # U = scipy.sparse.linalg.expm(-1j * H * t)
+
+        # ダメ
+        # H = SparsePauliOp.from_operator(Operator(self.H).reverse_qargs())
+        # U = PauliEvolutionGate(H, t)
+
         ghz_circuit = self.get_ghz_circuit(phase=0)
         ghz_op = Operator(ghz_circuit)
 
         ghz_circuit_with_phase = self.get_ghz_circuit(phase=phase)
         ghz_op_with_phase = Operator(ghz_circuit_with_phase)
 
+        # This is correct
         final_state = initial_state.evolve(
             ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
         )
