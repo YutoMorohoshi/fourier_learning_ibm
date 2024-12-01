@@ -4,8 +4,9 @@ import networkx as nx
 import itertools
 import math
 from qiskit import QuantumCircuit
+from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.quantum_info.operators import Operator
-from qiskit.quantum_info import SparsePauliOp
+from qiskit.quantum_info import Statevector, SparsePauliOp
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 
@@ -32,7 +33,7 @@ def get_graph(n_qubits, rng, graph_type="tree"):
         print("ToDo: hadamard")
     elif graph_type == "line":
         for node in nodes:
-            if node == math.ceil(n_qubits / 4):
+            if node == n_qubits // 2 - 1:
                 G.nodes[node]["hadamard"] = True
             else:
                 G.nodes[node]["hadamard"] = False
@@ -65,51 +66,57 @@ def get_graph(n_qubits, rng, graph_type="tree"):
         G.edges[edge]["J"] = rng.uniform(-1, 1)
         # G.edges[edge]["J"] = 1
 
-    # エッジに 'interaction_order' 属性を追加
-    """
-    if graph_type == "tree":
-        if n_qubits == 10:
-            interaction_orders = [
-                [(0, 1)],
-                [(1, 2), (0, 4)],
-                [(0, 3), (2, 9), (4, 5)],
-                [(5, 6), (2, 8)],
-                [(5, 7)],
-            ]
-        elif n_qubits == 8:
-            interaction_orders = [
-                [(0, 1)],
-                [(1, 2), (0, 3)],
-                [(0, 4), (2, 7), (3, 5)],
-                [(5, 6)],
-            ]
-        elif n_qubits == 4:
-            interaction_orders = [[(0, 1)], [(1, 2), (0, 3)]]
-    elif graph_type == "line":
-        # first_half_pairs = [(i, i + 1) for i in range(0, n_qubits - 1, 2)]
-        # second_half_pairs = [(i, i + 1) for i in range(1, n_qubits - 1, 2)]
-        # interaction_orders = [first_half_pairs, second_half_pairs]
-        interaction_orders = []
-        for i in range(n_qubits // 2):
-            if i == 0:
-                interaction_orders.append([(n_qubits // 2 - 1, n_qubits // 2)])
-            else:
-                interaction_orders.append(
-                    [
-                        (n_qubits // 2 - i - 1, n_qubits // 2 - i),
-                        (n_qubits // 2 + i - 1, n_qubits // 2 + i),
-                    ]
-                )
-
-    for i in range(len(interaction_orders)):
-        for j in range(len(interaction_orders[i])):
-            G.edges[interaction_orders[i][j]]["interaction_order"] = i
-    """
-
     # エッジに 'cnot' 属性を追加
     if graph_type == "tree":
         print("ToDo: cnot_order")
     elif graph_type == "line":
+        # State |0011...1100> (center qubits are 1 and the rest are 0)
+        leftmost = n_qubits // 4
+        rightmost = leftmost + n_qubits // 2 - 1
+        hadamard = list(filter(lambda x: G.nodes[x]["hadamard"], G.nodes))[0]
+        left_start = hadamard
+        right_start = hadamard
+
+        for i in range(hadamard - leftmost + 1):
+            if i == 0:
+                # Hadamard より右側の処理
+                control = hadamard
+                target = hadamard + 1
+                right_start = target
+                G.edges[(control, target)]["cnot"] = {
+                    "order": i,
+                    "control": control,
+                    "target": target,
+                }
+            else:
+                # Hadamard より左側の処理
+                control = left_start
+                target = left_start - 1
+
+                # target が leftmost を超えていない場合のみ CNOT を作用させる
+                if target >= leftmost:
+                    G.edges[(control, target)]["cnot"] = {
+                        "order": i,
+                        "control": control,
+                        "target": target,
+                    }
+                    left_start = target
+
+                # Hadamard より右側の処理
+                control = right_start
+                target = right_start + 1
+
+                # target が rightmost を超えていない場合のみ CNOT を作用させる
+                if target <= rightmost:
+                    G.edges[(control, target)]["cnot"] = {
+                        "order": i,
+                        "control": control,
+                        "target": target,
+                    }
+                    right_start = target
+
+        """
+        # State |111000> 
         rightmost = n_qubits // 2 - 1
         for i in range(math.ceil(n_qubits / 4)):
             if i == 0:
@@ -141,6 +148,7 @@ def get_graph(n_qubits, rng, graph_type="tree"):
                         "control": right_control,
                         "target": right_target,
                     }
+        """
 
         # それ以外のエッジには None の 'cnot_order' 属性を追加
         for edge in G.edges:
@@ -247,13 +255,10 @@ class HeisenbergModel:
         self.n_qubits = n_qubits
         self.G = graph
         self.Js = [self.G.edges[edge]["J"] for edge in self.G.edges]
-
-        # self.H, self.eigvals = self.get_hamiltonian_and_eigvals()
-        # self.H = self.get_hamiltonian()
-
-        # sparse matrix
-        self.H = self.get_sparse_hamiltonian()
         self.backend = backend
+
+        # sparse big-endian matrix
+        self.H = self.get_hamiltonian()
 
         # first_half_pairs の始まりは、n_qubits を 4 で割った余りが 0 なら 1, そうでなければ 0
         if self.n_qubits % 4 == 0:
@@ -280,6 +285,11 @@ class HeisenbergModel:
                 pauli_string = ["I"] * self.n_qubits
                 pauli_string[i] = pauli
                 pauli_string[j] = pauli
+
+                # Convert to little-endian for Qiskit's SparsePauliOp
+                # See: https://docs.quantum.ibm.com/api/qiskit/qiskit.quantum_info.SparsePauliOp#from_list
+                pauli_string.reverse()
+
                 strings.append("".join(pauli_string))
 
         return strings
@@ -292,24 +302,7 @@ class HeisenbergModel:
             [(pauli_string, J) for pauli_string, J in zip(pauli_strings, coefficients)]
         )
 
-        # Shift the Hamiltonian so that the minimum eigenvalue is 0
-        # H = H - min_eigval * SparsePauliOp.from_list([("I" * self.n_qubits, 1)])
-        # shifted_eigvals = eigvals - min_eigval
-        # return H.simplify().to_matrix(), shifted_eigvals, min_eigval
-
-        return H.simplify().to_matrix()
-
-    def get_sparse_hamiltonian(self):
-        pauli_strings = self.get_pauli_strings()
-        coefficients = np.repeat(self.Js, 3)  # Js を各パウリ演算子に対応させる
-
-        H = SparsePauliOp.from_list(
-            [(pauli_string, J) for pauli_string, J in zip(pauli_strings, coefficients)]
-        )
-
-        sparse_H = scipy.sparse.csr_matrix(H.to_matrix())
-
-        return sparse_H
+        return H
 
     def add_heisenberg_interaction(self, qc, pairs, Js, t):
         for (i, j), J in zip(pairs, Js):
@@ -343,7 +336,8 @@ class HeisenbergModel:
             ]
         )
 
-        qc = QuantumCircuit(self.n_qubits // 2)
+        # qc = QuantumCircuit(self.n_qubits // 2)
+        qc = QuantumCircuit(self.n_qubits)
 
         # hadamard 属性を持つノードを抽出
         hadamard_node = None
@@ -373,28 +367,21 @@ class HeisenbergModel:
 
     def exact_simulation(self, t, phase=0):
         # Compute the exact evolution of the Heisenberg model using the GHZ state.
-        initial_state = np.zeros(2**self.n_qubits, dtype=complex)
-        initial_state[0] = 1
-        # U = scipy.linalg.expm(-1j * self.H * t)  # for dense matrix
-        U = scipy.sparse.linalg.expm(-1j * self.H * t)  # for sparse matrix
+        initial_state = Statevector.from_label("0" * self.n_qubits)
+
+        U = scipy.sparse.linalg.expm(-1j * self.H.to_matrix(sparse=True) * t)
 
         ghz_circuit = self.get_ghz_circuit(phase=0)
-        ghz_unitary = np.kron(
-            Operator(ghz_circuit).data,
-            np.eye(2 ** (self.n_qubits - self.n_qubits // 2)),
-        )
+        ghz_op = Operator(ghz_circuit)
 
         ghz_circuit_with_phase = self.get_ghz_circuit(phase=phase)
-        ghz_unitary_with_phase = np.kron(
-            Operator(ghz_circuit_with_phase).data,
-            np.eye(2 ** (self.n_qubits - self.n_qubits // 2)),
+        ghz_op_with_phase = Operator(ghz_circuit_with_phase)
+
+        final_state = initial_state.evolve(
+            ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
         )
 
-        final_state = (
-            np.conjugate(ghz_unitary_with_phase.T) @ U @ ghz_unitary @ initial_state
-        )
-
-        prob0 = np.abs(final_state[0]) ** 2
+        prob0 = final_state.probabilities_dict()["0" * self.n_qubits]
 
         return prob0
 
