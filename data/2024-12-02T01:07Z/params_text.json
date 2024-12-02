@@ -1,0 +1,1 @@
+{"n_samples": 108, "n_qubits": 10, "graph_type": "line", "backend_qpu_name": "ibm_marrakesh", "beta": 1, "C": 100, "n_features": 5, "times": [0.0, 0.031415926535897934, 0.06283185307179587, 0.09424777960769379, 0.12566370614359174]}

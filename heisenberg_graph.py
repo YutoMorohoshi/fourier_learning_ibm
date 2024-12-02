@@ -12,7 +12,7 @@ from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 def get_n_steps(t):
     # interval per division
-    # max_delta_t = 0.5
+    max_delta_t = 0.5
 
     # n_steps = int(t / max_delta_t) + 1
     n_steps = 1
@@ -216,7 +216,9 @@ def get_initial_layout(n_qubits, graph_type, qpu_name):
             elif n_qubits == 8:
                 initial_layout = [103, 104, 105, 102, 96, 101, 100, 106]
     elif graph_type == "line":
-        initial_layout = list(range(n_qubits))
+        # initial_layout = list(range(n_qubits))
+        if qpu_name == "ibm_marrakesh":
+            initial_layout = list(range(140, 140 + n_qubits))
 
     return initial_layout
 
@@ -307,6 +309,13 @@ class HeisenbergModel:
 
     def add_heisenberg_interaction(self, qc, pairs, Js, t):
         for (i, j), J in zip(pairs, Js):
+            # Check if the qubits are entangled
+            is_entangled = (
+                self.G.nodes[i]["is_entangled"] or self.G.nodes[j]["is_entangled"]
+            )
+            if not is_entangled:
+                continue
+
             # Function to add Heisenberg interactions between specific pairs of qubits
             # this corresponds to exp(-i J t (X_i X_j + Y_i Y_j + Z_i Z_j))
             theta = 2 * J * t
@@ -318,6 +327,10 @@ class HeisenbergModel:
             qc.rzx(-theta, j, i)
 
             qc.cx(i, j)
+
+            # ノードの 'is_entangled' 属性を更新
+            self.G.nodes[i]["is_entangled"] = True
+            self.G.nodes[j]["is_entangled"] = True
 
     def get_ghz_circuit(self, phase=0):
         """Prepare the GHZ state on the first half of the qubits.
@@ -359,10 +372,13 @@ class HeisenbergModel:
         for i in range(max_order + 1):
             for j, k in self.G.edges:
                 if self.G.edges[(j, k)]["cnot"]["order"] == i:
-                    # print(f"i: {i}, j:{j}, k: {k}")
                     control = self.G.edges[(j, k)]["cnot"]["control"]
                     target = self.G.edges[(j, k)]["cnot"]["target"]
                     qc.cx(control, target)
+
+                    # ノードの 'is_entangled' 属性を更新
+                    self.G.nodes[j]["is_entangled"] = True
+                    self.G.nodes[k]["is_entangled"] = True
 
         return qc
 
@@ -387,7 +403,7 @@ class HeisenbergModel:
         ghz_circuit_with_phase = self.get_ghz_circuit(phase=phase)
         ghz_op_with_phase = Operator(ghz_circuit_with_phase)
 
-        # This is correct
+        # initial_state is big endian, but when using evolve(), we don't need to reverse the qubits
         final_state = initial_state.evolve(
             ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
         )
@@ -400,6 +416,10 @@ class HeisenbergModel:
         self, total_time, n_steps, phase=0, initial_layout=None
     ):
         t = total_time / n_steps
+
+        # ノードに 'is_entangled' 属性を追加
+        for node in self.G.nodes:
+            self.G.nodes[node]["is_entangled"] = False
 
         qc = QuantumCircuit(self.n_qubits)
 
