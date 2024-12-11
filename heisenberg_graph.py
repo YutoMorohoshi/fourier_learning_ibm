@@ -12,10 +12,10 @@ from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 def get_n_steps(t):
     # interval per division
-    max_delta_t = 0.5
+    t_per_step = 1.0
 
-    # n_steps = int(t / max_delta_t) + 1
-    n_steps = 1
+    n_steps = int(t / t_per_step) + 1
+    # n_steps = 1
 
     return n_steps
 
