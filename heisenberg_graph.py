@@ -384,6 +384,7 @@ class HeisenbergModel:
 
     def exact_simulation(self, t, phase=0):
         # Compute the exact evolution of the Heisenberg model using the GHZ state.
+        # Exact means that we compute the matrix exponential of the Hamiltonian, not Trotterized.
         initial_state = Statevector.from_label("0" * self.n_qubits)
 
         U = scipy.sparse.linalg.expm(-1j * self.H.to_matrix(sparse=True) * t)
@@ -408,7 +409,8 @@ class HeisenbergModel:
             ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
         )
 
-        prob0 = final_state.probabilities_dict()["0" * self.n_qubits]
+        # "00...00" がなければ 0 を返す
+        prob0 = final_state.probabilities_dict().get("0" * self.n_qubits, 0)
 
         return prob0
 
