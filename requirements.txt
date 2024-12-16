@@ -3,6 +3,7 @@ aiosignal @ file:///home/conda/feedstock_root/build_artifacts/aiosignal_16679357
 alembic @ file:///home/conda/feedstock_root/build_artifacts/alembic_1694690212886/work
 altair @ file:///home/conda/feedstock_root/build_artifacts/altair_1696364485230/work
 annotated-types==0.7.0
+antlr4-python3-runtime==4.9.3
 anyio @ file:///home/conda/feedstock_root/build_artifacts/anyio_1693488585952/work
 argon2-cffi @ file:///home/conda/feedstock_root/build_artifacts/argon2-cffi_1692818318753/work
 argon2-cffi-bindings @ file:///home/conda/feedstock_root/build_artifacts/argon2-cffi-bindings_1695386553988/work
@@ -137,6 +138,7 @@ numba @ file:///home/conda/feedstock_root/build_artifacts/numba_1687804756633/wo
 numexpr @ file:///home/conda/feedstock_root/build_artifacts/numexpr_1697637016001/work
 numpy @ file:///home/conda/feedstock_root/build_artifacts/numpy_1687808322243/work
 oauthlib @ file:///home/conda/feedstock_root/build_artifacts/oauthlib_1666056362788/work
+omegaconf==2.3.0
 openpyxl @ file:///home/conda/feedstock_root/build_artifacts/openpyxl_1695464696880/work
 orjson==3.10.12
 overrides @ file:///home/conda/feedstock_root/build_artifacts/overrides_1691338815398/work
