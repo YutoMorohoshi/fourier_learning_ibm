@@ -63,8 +63,10 @@ def get_graph(n_qubits, rng, graph_type="tree"):
 
     # エッジにランダムな重み (J_{ij}) を追加
     for edge in G.edges:
-        G.edges[edge]["J"] = rng.uniform(-1, 1)
-        # G.edges[edge]["J"] = 1
+        # G.edges[edge]["J"] = rng.uniform(-1, 1)
+        G.edges[edge]["J"] = rng.uniform(
+            -1 / (3 * (n_qubits - 1)), 1 / (3 * (n_qubits - 1))
+        )
 
     # エッジに 'cnot' 属性を追加
     if graph_type == "tree":
@@ -236,7 +238,8 @@ def get_prob0(result, n_qubits, mit=None):
 
     if mit is not None:
         quasis = mit.apply_correction(meas_counts, range(n_qubits))
-        prob0_mit = quasis["0" * n_qubits]
+        prob0_mit = quasis.get("0" * n_qubits, 0)
+        # prob0_mit = quasis["0" * n_qubits]
         return prob0_nmit, prob0_mit
     else:
         return prob0_nmit
