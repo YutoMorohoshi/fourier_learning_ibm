@@ -63,10 +63,10 @@ def get_graph(n_qubits, rng, graph_type="tree"):
 
     # エッジにランダムな重み (J_{ij}) を追加
     for edge in G.edges:
-        # G.edges[edge]["J"] = rng.uniform(-1, 1)
-        G.edges[edge]["J"] = rng.uniform(
-            -1 / (3 * (n_qubits - 1)), 1 / (3 * (n_qubits - 1))
-        )
+        G.edges[edge]["J"] = rng.uniform(-1, 1)
+        # G.edges[edge]["J"] = rng.uniform(
+        #     -1 / (3 * (n_qubits - 1)), 1 / (3 * (n_qubits - 1))
+        # )
 
     # エッジに 'cnot' 属性を追加
     if graph_type == "tree":
