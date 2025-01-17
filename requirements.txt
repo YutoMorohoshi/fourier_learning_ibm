@@ -71,7 +71,7 @@ ibm-platform-services==0.59.0
 idna @ file:///home/conda/feedstock_root/build_artifacts/idna_1663625384323/work
 imagecodecs @ file:///home/conda/feedstock_root/build_artifacts/imagecodecs_1696191619262/work
 imageio @ file:///home/conda/feedstock_root/build_artifacts/imageio_1696854106455/work
-imbalanced-learn==0.12.4
+imbalanced-learn==0.13.0
 importlib-metadata @ file:///home/conda/feedstock_root/build_artifacts/importlib-metadata_1688754491823/work
 importlib-resources @ file:///home/conda/feedstock_root/build_artifacts/importlib_resources_1695414790617/work
 ipykernel @ file:///home/conda/feedstock_root/build_artifacts/ipykernel_1693880262622/work
@@ -211,6 +211,7 @@ Send2Trash @ file:///home/conda/feedstock_root/build_artifacts/send2trash_168260
 simpervisor @ file:///home/conda/feedstock_root/build_artifacts/simpervisor_1684441099342/work
 simplegeneric==0.8.1
 six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
+sklearn-compat==0.1.1
 sktime==0.26.0
 smmap @ file:///home/conda/feedstock_root/build_artifacts/smmap_1611376390914/work
 sniffio @ file:///home/conda/feedstock_root/build_artifacts/sniffio_1662051266223/work
