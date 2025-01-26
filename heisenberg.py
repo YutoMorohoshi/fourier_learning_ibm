@@ -145,11 +145,10 @@ def extract_probs(probs_dict, successful_samples):
 
 
 class HeisenbergModel:
-    def __init__(self, n_qubits, graph, backend=None):
+    def __init__(self, n_qubits, graph):
         self.n_qubits = n_qubits
         self.G = graph
         self.Js = [self.G.edges[edge]["J"] for edge in self.G.edges]
-        self.backend = backend
 
         # sparse big-endian matrix
         self.H = self.get_hamiltonian()
@@ -282,27 +281,38 @@ class HeisenbergModel:
         U = scipy.sparse.linalg.expm(-1j * self.H.to_matrix(sparse=True) * t)
 
         ghz_circuit = self.get_ghz_circuit(phase=0)
-        ghz_op = Operator(ghz_circuit)
+        # ghz_op = Operator(ghz_circuit)
+        ghz_op = Operator.from_circuit(ghz_circuit)
 
         ghz_circuit_with_phase = self.get_ghz_circuit(phase=phase)
-        ghz_op_with_phase = Operator(ghz_circuit_with_phase)
+        # ghz_op_with_phase = Operator(ghz_circuit_with_phase)
+        ghz_op_with_phase = Operator.from_circuit(ghz_circuit_with_phase)
 
         # initial_state is big endian, but when using evolve(), we don't need to reverse the qubits
         final_state = initial_state.evolve(
             ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
         )
 
-        # # "00...00" がなければ 0 を返す
-        # prob0 = final_state.probabilities_dict().get("0" * self.n_qubits, 0)
+        return final_state, U
 
-        # return prob0
+    def get_trotter_circuit(self, t, n_step):
+        qc = QuantumCircuit(self.n_qubits)
 
-        return final_state
+        # Apply time-evolution
+        self.add_heisenberg_interaction(qc, self.first_half_pairs, self.first_Js, t / 2)
+        self.add_heisenberg_interaction(qc, self.second_half_pairs, self.second_Js, t)
+        for _ in range(n_step - 1):
+            self.add_heisenberg_interaction(qc, self.first_half_pairs, self.first_Js, t)
+            self.add_heisenberg_interaction(
+                qc, self.second_half_pairs, self.second_Js, t
+            )
+        self.add_heisenberg_interaction(qc, self.first_half_pairs, self.first_Js, t / 2)
+        # qc.barrier()
 
-    def get_trotter_simulation_circuit(
-        self, total_time, n_steps, phase=0, initial_layout=None
-    ):
-        t = total_time / n_steps
+        return qc
+
+    def get_circuit(self, total_time, n_step, phase=0, initial_layout=None):
+        t = total_time / n_step
 
         # ノードに 'is_entangled' 属性を追加
         for node in self.G.nodes:
@@ -315,32 +325,24 @@ class HeisenbergModel:
         # qc.barrier()
 
         # Apply time-evolution
-        self.add_heisenberg_interaction(qc, self.first_half_pairs, self.first_Js, t / 2)
-        self.add_heisenberg_interaction(qc, self.second_half_pairs, self.second_Js, t)
-        for _ in range(n_steps - 1):
-            self.add_heisenberg_interaction(qc, self.first_half_pairs, self.first_Js, t)
-            self.add_heisenberg_interaction(
-                qc, self.second_half_pairs, self.second_Js, t
-            )
-        self.add_heisenberg_interaction(qc, self.first_half_pairs, self.first_Js, t / 2)
-        # qc.barrier()
+        qc.compose(self.get_trotter_circuit(t, n_step), inplace=True)
 
         # Uncompute GHZ state
         qc.compose(self.get_ghz_circuit(phase=phase).inverse(), inplace=True)
 
         # Measure
-        qc.measure_all()
+        # qc.measure_all()
 
         # Convert to an ISA circuit and layout-mapped observables.
-        if initial_layout is None:
-            optimization_level = 1
-        else:
-            optimization_level = 3
-        pm = generate_preset_pass_manager(
-            backend=self.backend,
-            optimization_level=optimization_level,
-            initial_layout=initial_layout,
-        )
-        exec_qc = pm.run(qc)
+        # if initial_layout is None:
+        #     optimization_level = 0
+        # else:
+        #     optimization_level = 0
+        # pm = generate_preset_pass_manager(
+        #     backend=self.backend,
+        #     optimization_level=optimization_level,
+        #     initial_layout=initial_layout,
+        # )
+        # exec_qc = pm.run(qc)
 
-        return qc, exec_qc
+        return qc  # , exec_qc
