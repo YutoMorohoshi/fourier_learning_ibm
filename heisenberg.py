@@ -293,7 +293,7 @@ class HeisenbergModel:
             ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
         )
 
-        return final_state, U
+        return final_state, ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
 
     def get_trotter_circuit(self, t, n_step):
         qc = QuantumCircuit(self.n_qubits)
