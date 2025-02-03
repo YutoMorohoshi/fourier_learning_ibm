@@ -133,14 +133,14 @@ def get_prob0(result, n_qubits):
     return prob0
 
 
-# def extract_probs(probs_dict, successful_samples):
-#     probs_extracted = []
+def extract_probs(probs_dict, successful_samples):
+    probs_extracted = []
 
-#     for sample_id, probs in probs_dict.items():
-#         if sample_id in successful_samples:
-#             probs_extracted.append(probs.values())
+    for sample_id, probs in probs_dict.items():
+        if sample_id in successful_samples:
+            probs_extracted.append(probs.values())
 
-#     return list(itertools.chain.from_iterable(probs_extracted))
+    return list(itertools.chain.from_iterable(probs_extracted))
 
 
 class HeisenbergModel:
