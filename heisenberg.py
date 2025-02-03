@@ -10,16 +10,6 @@ from qiskit.quantum_info import Statevector, SparsePauliOp
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 
-def get_n_steps(t):
-    # interval per division
-    t_per_step = 1.0
-
-    n_steps = int(t / t_per_step) + 1
-    # n_steps = 1
-
-    return n_steps
-
-
 def get_graph(n_qubits, Js):
     # グラフを作成
     G = nx.Graph()
@@ -114,34 +104,43 @@ def get_initial_layout(n_qubits, qpu_name):
     return initial_layout
 
 
-def get_prob0(result, n_qubits, mit=None):
+# def get_prob0(result, n_qubits, mit=None):
+#     meas_counts = result.data.meas.get_counts()
+#     num_shots = result.data.meas.num_shots
+#     prob0_mit = 0
+
+#     if "0" * n_qubits not in meas_counts:
+#         # print(" > No counts for |0...0> state")
+#         prob0_nmit = 0
+#     else:
+#         prob0_nmit = meas_counts["0" * n_qubits] / num_shots
+
+#     if mit is not None:
+#         quasis = mit.apply_correction(meas_counts, range(n_qubits))
+#         prob0_mit = quasis.get("0" * n_qubits, 0)
+#         # prob0_mit = quasis["0" * n_qubits]
+#         return prob0_nmit, prob0_mit
+#     else:
+#         return prob0_nmit
+
+
+def get_prob0(result, n_qubits):
     meas_counts = result.data.meas.get_counts()
     num_shots = result.data.meas.num_shots
-    prob0_mit = 0
 
-    if "0" * n_qubits not in meas_counts:
-        # print(" > No counts for |0...0> state")
-        prob0_nmit = 0
-    else:
-        prob0_nmit = meas_counts["0" * n_qubits] / num_shots
+    prob0 = meas_counts.get("0" * n_qubits, 0) / num_shots
 
-    if mit is not None:
-        quasis = mit.apply_correction(meas_counts, range(n_qubits))
-        prob0_mit = quasis.get("0" * n_qubits, 0)
-        # prob0_mit = quasis["0" * n_qubits]
-        return prob0_nmit, prob0_mit
-    else:
-        return prob0_nmit
+    return prob0
 
 
-def extract_probs(probs_dict, successful_samples):
-    probs_extracted = []
+# def extract_probs(probs_dict, successful_samples):
+#     probs_extracted = []
 
-    for sample_id, probs in probs_dict.items():
-        if sample_id in successful_samples:
-            probs_extracted.append(probs.values())
+#     for sample_id, probs in probs_dict.items():
+#         if sample_id in successful_samples:
+#             probs_extracted.append(probs.values())
 
-    return list(itertools.chain.from_iterable(probs_extracted))
+#     return list(itertools.chain.from_iterable(probs_extracted))
 
 
 class HeisenbergModel:
@@ -331,7 +330,7 @@ class HeisenbergModel:
         qc.compose(self.get_ghz_circuit(phase=phase).inverse(), inplace=True)
 
         # Measure
-        # qc.measure_all()
+        qc.measure_all()
 
         # Convert to an ISA circuit and layout-mapped observables.
         # if initial_layout is None:
