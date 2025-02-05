@@ -1,442 +1,607 @@
 [
     {
+        "sample":0,
         "Js":[
             0.5479120971,
             -0.1222431205,
             0.7171958398
         ],
-        "expected_value":13.8992199763
+        "expected_value":13.899247238,
+        "expected_value_diag":13.8992199763,
+        "diff":0.0000272616
     },
     {
+        "sample":1,
         "Js":[
             0.3947360581,
             -0.8116453042,
             0.9512447033
         ],
-        "expected_value":28.5852127366
+        "expected_value":28.5864910348,
+        "expected_value_diag":28.5852127366,
+        "diff":0.0012782982
     },
     {
+        "sample":2,
         "Js":[
             0.522279404,
             0.5721286106,
             -0.7437727346
         ],
-        "expected_value":2.653081553
+        "expected_value":2.6530778404,
+        "expected_value_diag":2.653081553,
+        "diff":0.0000037126
     },
     {
+        "sample":3,
         "Js":[
             -0.0992281242,
             -0.2584039515,
             0.8535299777
         ],
-        "expected_value":7.2228912993
+        "expected_value":7.2229936501,
+        "expected_value_diag":7.2228912993,
+        "diff":0.0001023508
     },
     {
+        "sample":4,
         "Js":[
             0.2877302402,
             0.6455232265,
             -0.1131716023
         ],
-        "expected_value":0.8650778369
+        "expected_value":0.8650958424,
+        "expected_value_diag":0.8650778369,
+        "diff":0.0000180055
     },
     {
+        "sample":5,
         "Js":[
             -0.5455225564,
             0.109169574,
             -0.8723654878
         ],
-        "expected_value":1.1389498224
+        "expected_value":1.1389470361,
+        "expected_value_diag":1.1389498224,
+        "diff":0.0000027863
     },
     {
+        "sample":6,
         "Js":[
             0.655262344,
             0.2633287982,
             0.5161754802
         ],
-        "expected_value":9.0606594554
+        "expected_value":9.0607024424,
+        "expected_value_diag":9.0606594554,
+        "diff":0.000042987
     },
     {
+        "sample":7,
         "Js":[
             -0.2909480637,
             0.9413960488,
             0.7862422426
         ],
-        "expected_value":4.3670265732
+        "expected_value":4.3669499412,
+        "expected_value_diag":4.3670265732,
+        "diff":0.000076632
     },
     {
+        "sample":8,
         "Js":[
             0.5567669941,
             -0.6107225843,
             -0.0665579925
         ],
-        "expected_value":4.5660773235
+        "expected_value":4.5660958433,
+        "expected_value_diag":4.5660773235,
+        "diff":0.0000185198
     },
     {
+        "sample":9,
         "Js":[
             -0.9123924684,
             -0.6914210159,
             0.3660979065
         ],
-        "expected_value":3.7203795888
+        "expected_value":3.7203877936,
+        "expected_value_diag":3.7203795888,
+        "diff":0.0000082048
     },
     {
+        "sample":10,
         "Js":[
             0.4895243118,
             0.9350194649,
             -0.3483492837
         ],
-        "expected_value":1.7114054036
+        "expected_value":1.7115445094,
+        "expected_value_diag":1.7114054036,
+        "diff":0.0001391058
     },
     {
+        "sample":11,
         "Js":[
             -0.2590805879,
             -0.0608883774,
             -0.6210572818
         ],
-        "expected_value":0.9206056772
+        "expected_value":0.9206071093,
+        "expected_value_diag":0.9206056772,
+        "diff":0.0000014321
     },
     {
+        "sample":12,
         "Js":[
             -0.7401569893,
             -0.0485901475,
             -0.5461813019
         ],
-        "expected_value":1.084232517
+        "expected_value":1.0842321961,
+        "expected_value_diag":1.084232517,
+        "diff":0.0000003209
     },
     {
+        "sample":13,
         "Js":[
             0.3396279894,
             -0.1256961623,
             0.6653563921
         ],
-        "expected_value":7.3987302013
+        "expected_value":7.3987548637,
+        "expected_value_diag":7.3987302013,
+        "diff":0.0000246624
     },
     {
+        "sample":14,
         "Js":[
             0.400530204,
             -0.3752667172,
             0.6645196028
         ],
-        "expected_value":9.9681903203
+        "expected_value":9.9682876481,
+        "expected_value_diag":9.9681903203,
+        "diff":0.0000973277
     },
     {
+        "sample":15,
         "Js":[
             0.609528715,
             -0.2250432419,
             -0.4233437921
         ],
-        "expected_value":3.5266092927
+        "expected_value":3.5266122606,
+        "expected_value_diag":3.5266092927,
+        "diff":0.0000029679
     },
     {
+        "sample":16,
         "Js":[
             0.3649910079,
             -0.7204950328,
             -0.600183595
         ],
-        "expected_value":3.1597873246
+        "expected_value":3.159830446,
+        "expected_value_diag":3.1597873246,
+        "diff":0.0000431215
     },
     {
+        "sample":17,
         "Js":[
             -0.9852754605,
             0.573848755,
             0.3297017132
         ],
-        "expected_value":2.1717187187
+        "expected_value":2.1718548475,
+        "expected_value_diag":2.1717187187,
+        "diff":0.0001361289
     },
     {
+        "sample":18,
         "Js":[
             0.4103307573,
             0.561458062,
             -0.0821684489
         ],
-        "expected_value":1.2975375591
+        "expected_value":1.2975719165,
+        "expected_value_diag":1.2975375591,
+        "diff":0.0000343574
     },
     {
+        "sample":19,
         "Js":[
             0.1374823919,
             -0.7204060037,
             -0.7709398529
         ],
-        "expected_value":2.3265074758
+        "expected_value":2.3265483495,
+        "expected_value_diag":2.3265074758,
+        "diff":0.0000408737
     },
     {
+        "sample":20,
         "Js":[
             0.3368059236,
             -0.0578075877,
             0.130472213
         ],
-        "expected_value":2.1430039379
+        "expected_value":2.1430034932,
+        "expected_value_diag":2.1430039379,
+        "diff":0.0000004447
     },
     {
+        "sample":21,
         "Js":[
             0.5299977148,
             0.26943664,
             0.1071588013
         ],
-        "expected_value":2.6126528218
+        "expected_value":2.6126737843,
+        "expected_value_diag":2.6126528218,
+        "diff":0.0000209625
     },
     {
+        "sample":22,
         "Js":[
             0.1184143215,
             -0.3920998039,
             -0.9383643309
         ],
-        "expected_value":1.9448803514
+        "expected_value":1.944909543,
+        "expected_value_diag":1.9448803514,
+        "diff":0.0000291916
     },
     {
+        "sample":23,
         "Js":[
             -0.1265652215,
             -0.5708306544,
             -0.1829427126
         ],
-        "expected_value":1.4008542273
+        "expected_value":1.4008566156,
+        "expected_value_diag":1.4008542273,
+        "diff":0.0000023883
     },
     {
+        "sample":24,
         "Js":[
             0.7068061465,
             -0.5321210283,
             -0.8833945166
         ],
-        "expected_value":7.277502088
+        "expected_value":7.2775941727,
+        "expected_value_diag":7.277502088,
+        "diff":0.0000920847
     },
     {
+        "sample":25,
         "Js":[
             -0.437232216,
             -0.4128124845,
             0.3238330295
         ],
-        "expected_value":2.1200937747
+        "expected_value":2.1200989209,
+        "expected_value_diag":2.1200937747,
+        "diff":0.0000051462
     },
     {
+        "sample":26,
         "Js":[
             0.1140643047,
             0.5677964182,
             0.3286270807
         ],
-        "expected_value":1.2684489206
+        "expected_value":1.2684365297,
+        "expected_value_diag":1.2684489206,
+        "diff":0.0000123909
     },
     {
+        "sample":27,
         "Js":[
             -0.1872262771,
             0.6280407693,
             -0.6660541602
         ],
-        "expected_value":0.7729201857
+        "expected_value":0.7728806519,
+        "expected_value_diag":0.7729201857,
+        "diff":0.0000395338
     },
     {
+        "sample":28,
         "Js":[
             -0.9545758537,
             -0.8199042784,
             0.4447187012
         ],
-        "expected_value":5.0257218669
+        "expected_value":5.0257475726,
+        "expected_value_diag":5.0257218669,
+        "diff":0.0000257057
     },
     {
+        "sample":29,
         "Js":[
             -0.0762455395,
             -0.6774564419,
             0.0020895502
         ],
-        "expected_value":1.8439960478
+        "expected_value":1.8439961888,
+        "expected_value_diag":1.8439960478,
+        "diff":0.000000141
     },
     {
+        "sample":30,
         "Js":[
             -0.6953757946,
             0.3926407502,
             -0.1076874489
         ],
-        "expected_value":0.8218510185
+        "expected_value":0.8218734625,
+        "expected_value_diag":0.8218510185,
+        "diff":0.000022444
     },
     {
+        "sample":31,
         "Js":[
             -0.2379575478,
             -0.3969758217,
             0.2605651862
         ],
-        "expected_value":1.8544119403
+        "expected_value":1.8544162176,
+        "expected_value_diag":1.8544119403,
+        "diff":0.0000042773
     },
     {
+        "sample":32,
         "Js":[
             -0.2763747789,
             -0.8247001614,
             -0.7639881958
         ],
-        "expected_value":1.8673193285
+        "expected_value":1.8673498155,
+        "expected_value_diag":1.8673193285,
+        "diff":0.000030487
     },
     {
+        "sample":33,
         "Js":[
             0.9237953291,
             0.8171613814,
             0.3994142676
         ],
-        "expected_value":14.5438929218
+        "expected_value":14.5452956206,
+        "expected_value_diag":14.5438929218,
+        "diff":0.0014026988
     },
     {
+        "sample":34,
         "Js":[
             -0.4682600771,
             0.9383527547,
             0.5575018079
         ],
-        "expected_value":2.4086616921
+        "expected_value":2.4087463187,
+        "expected_value_diag":2.4086616921,
+        "diff":0.0000846266
     },
     {
+        "sample":35,
         "Js":[
             0.4337803783,
             -0.1012769957,
             -0.4555168763
         ],
-        "expected_value":2.1192680584
+        "expected_value":2.1192697382,
+        "expected_value_diag":2.1192680584,
+        "diff":0.0000016798
     },
     {
+        "sample":36,
         "Js":[
             -0.8072180757,
             0.8052047931,
             -0.0884474203
         ],
-        "expected_value":1.0425143491
+        "expected_value":1.0426835138,
+        "expected_value_diag":1.0425143491,
+        "diff":0.0001691647
     },
     {
+        "sample":37,
         "Js":[
             -0.5952732704,
             -0.3880867517,
             0.1584391379
         ],
-        "expected_value":1.6418092497
+        "expected_value":1.6418084258,
+        "expected_value_diag":1.6418092497,
+        "diff":0.0000008239
     },
     {
+        "sample":38,
         "Js":[
             -0.6464544341,
             0.7132285682,
             0.5170390597
         ],
-        "expected_value":2.4103102558
+        "expected_value":2.4104124916,
+        "expected_value_diag":2.4103102558,
+        "diff":0.0001022358
     },
     {
+        "sample":39,
         "Js":[
             0.4389259119,
             -0.1358139204,
             0.2546176814
         ],
-        "expected_value":3.5476181952
+        "expected_value":3.5476176638,
+        "expected_value_diag":3.5476181952,
+        "diff":0.0000005313
     },
     {
+        "sample":40,
         "Js":[
             0.1681959378,
             0.2996932031,
             -0.8311113577
         ],
-        "expected_value":1.3185826877
+        "expected_value":1.3185561845,
+        "expected_value_diag":1.3185826877,
+        "diff":0.0000265032
     },
     {
+        "sample":41,
         "Js":[
             -0.1683851957,
             -0.9167716523,
             -0.0120183615
         ],
-        "expected_value":2.1732926204
+        "expected_value":2.1732941909,
+        "expected_value_diag":2.1732926204,
+        "diff":0.0000015705
     },
     {
+        "sample":42,
         "Js":[
             -0.3402775753,
             -0.7109516223,
             -0.7931940646
         ],
-        "expected_value":1.7164100865
+        "expected_value":1.7164349921,
+        "expected_value_diag":1.7164100865,
+        "diff":0.0000249056
     },
     {
+        "sample":43,
         "Js":[
             0.1752891444,
             -0.6588140629,
             0.8502402368
         ],
-        "expected_value":13.0294965521
+        "expected_value":13.0299630578,
+        "expected_value_diag":13.0294965521,
+        "diff":0.0004665057
     },
     {
+        "sample":44,
         "Js":[
             0.1621222794,
             -0.3062603909,
             0.181830983
         ],
-        "expected_value":2.1149755385
+        "expected_value":2.1149774554,
+        "expected_value_diag":2.1149755385,
+        "diff":0.0000019169
     },
     {
+        "sample":45,
         "Js":[
             -0.9543922579,
             0.9171184265,
             -0.0353931261
         ],
-        "expected_value":1.4804815456
+        "expected_value":1.4808458878,
+        "expected_value_diag":1.4804815456,
+        "diff":0.0003643422
     },
     {
+        "sample":46,
         "Js":[
             0.5654704545,
             -0.8345400002,
             -0.0266833383
         ],
-        "expected_value":5.8846244231
+        "expected_value":5.8846750056,
+        "expected_value_diag":5.8846244231,
+        "diff":0.0000505826
     },
     {
+        "sample":47,
         "Js":[
             -0.0185860113,
             0.8756529099,
             0.1434561048
         ],
-        "expected_value":0.5275325372
+        "expected_value":0.5275274931,
+        "expected_value_diag":0.5275325372,
+        "diff":0.0000050441
     },
     {
+        "sample":48,
         "Js":[
             -0.0530211979,
             -0.4660486738,
             -0.3368620053
         ],
-        "expected_value":1.2880839914
+        "expected_value":1.2880892132,
+        "expected_value_diag":1.2880839914,
+        "diff":0.0000052218
     },
     {
+        "sample":49,
         "Js":[
             0.0413448049,
             -0.1221770794,
             -0.9567758402
         ],
-        "expected_value":1.487772819
+        "expected_value":1.4877823439,
+        "expected_value_diag":1.487772819,
+        "diff":0.0000095249
     },
     {
+        "sample":50,
         "Js":[
             0.6525838484,
             0.7923215437,
             -0.719501822
         ],
-        "expected_value":3.9768315603
+        "expected_value":3.9769741469,
+        "expected_value_diag":3.9768315603,
+        "diff":0.0001425865
     },
     {
+        "sample":51,
         "Js":[
             0.1080722871,
             -0.7828485177,
             0.3444801861
         ],
-        "expected_value":4.1083982309
+        "expected_value":4.108433362,
+        "expected_value_diag":4.1083982309,
+        "diff":0.0000351311
     },
     {
+        "sample":52,
         "Js":[
             -0.4375324323,
             0.3188452694,
             0.4539892286
         ],
-        "expected_value":1.7362688107
+        "expected_value":1.7362714025,
+        "expected_value_diag":1.7362688107,
+        "diff":0.0000025918
     },
     {
+        "sample":53,
         "Js":[
             0.5372949838,
             -0.7845181081,
             0.8320236903
         ],
-        "expected_value":28.1465972201
+        "expected_value":28.1474166752,
+        "expected_value_diag":28.1465972201,
+        "diff":0.0008194551
     },
     {
+        "sample":54,
         "Js":[
             -0.5395720182,
             -0.9251748876,
             0.1097049388
         ],
-        "expected_value":2.4305842525
+        "expected_value":2.4305945847,
+        "expected_value_diag":2.4305842525,
+        "diff":0.0000103323
     }
 ]
