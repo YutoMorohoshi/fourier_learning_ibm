@@ -98,10 +98,10 @@ def get_positions(n_qubits):
     return positions
 
 
-def get_initial_layout(n_qubits, qpu_name):
-    if qpu_name == "ibm_marrakesh":
-        initial_layout = list(range(140, 140 + n_qubits))
-    return initial_layout
+# def get_initial_layout(n_qubits, qpu_name):
+#     if qpu_name == "ibm_marrakesh":
+#         initial_layout = list(range(140, 140 + n_qubits))
+#     return initial_layout
 
 
 # def get_prob0(result, n_qubits, mit=None):
