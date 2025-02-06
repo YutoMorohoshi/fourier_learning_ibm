@@ -1,7 +1,6 @@
 import numpy as np
 import scipy
 import networkx as nx
-import itertools
 import math
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import PauliEvolutionGate
@@ -102,45 +101,6 @@ def get_positions(n_qubits):
 #     if qpu_name == "ibm_marrakesh":
 #         initial_layout = list(range(140, 140 + n_qubits))
 #     return initial_layout
-
-
-# def get_prob0(result, n_qubits, mit=None):
-#     meas_counts = result.data.meas.get_counts()
-#     num_shots = result.data.meas.num_shots
-#     prob0_mit = 0
-
-#     if "0" * n_qubits not in meas_counts:
-#         # print(" > No counts for |0...0> state")
-#         prob0_nmit = 0
-#     else:
-#         prob0_nmit = meas_counts["0" * n_qubits] / num_shots
-
-#     if mit is not None:
-#         quasis = mit.apply_correction(meas_counts, range(n_qubits))
-#         prob0_mit = quasis.get("0" * n_qubits, 0)
-#         # prob0_mit = quasis["0" * n_qubits]
-#         return prob0_nmit, prob0_mit
-#     else:
-#         return prob0_nmit
-
-
-def get_prob0(result, n_qubits):
-    meas_counts = result.data.meas.get_counts()
-    num_shots = result.data.meas.num_shots
-
-    prob0 = meas_counts.get("0" * n_qubits, 0) / num_shots
-
-    return prob0
-
-
-def extract_probs(probs_dict, successful_samples):
-    probs_extracted = []
-
-    for sample_id, probs in probs_dict.items():
-        if sample_id in successful_samples:
-            probs_extracted.append(probs.values())
-
-    return list(itertools.chain.from_iterable(probs_extracted))
 
 
 class HeisenbergModel:
@@ -332,16 +292,4 @@ class HeisenbergModel:
         # Measure
         qc.measure_all()
 
-        # Convert to an ISA circuit and layout-mapped observables.
-        # if initial_layout is None:
-        #     optimization_level = 0
-        # else:
-        #     optimization_level = 0
-        # pm = generate_preset_pass_manager(
-        #     backend=self.backend,
-        #     optimization_level=optimization_level,
-        #     initial_layout=initial_layout,
-        # )
-        # exec_qc = pm.run(qc)
-
-        return qc  # , exec_qc
+        return qc
