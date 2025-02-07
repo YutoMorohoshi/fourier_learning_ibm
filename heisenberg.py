@@ -247,12 +247,11 @@ class HeisenbergModel:
         # ghz_op_with_phase = Operator(ghz_circuit_with_phase)
         ghz_op_with_phase = Operator.from_circuit(ghz_circuit_with_phase)
 
+        U_all = ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
         # initial_state is big endian, but when using evolve(), we don't need to reverse the qubits
-        final_state = initial_state.evolve(
-            ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
-        )
+        final_state = initial_state.evolve(U_all)
 
-        return final_state, ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
+        return final_state, U_all
 
     def get_trotter_circuit(self, t, n_step):
         qc = QuantumCircuit(self.n_qubits)

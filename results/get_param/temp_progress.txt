@@ -1,0 +1,20 @@
+t: 0.000, n_step: 1, fidelity: 1.000e+00, elapsed_time: 7.164[s]
+
+t: 0.000, n_step: 2, fidelity: 1.000e+00, elapsed_time: 7.582[s]
+
+t: 0.000, n_step: 3, fidelity: 1.000e+00, elapsed_time: 7.175[s]
+
+t: 0.000, n_step: 4, fidelity: 1.000e+00, elapsed_time: 7.370[s]
+
+t: 0.000, n_step: 5, fidelity: 1.000e+00, elapsed_time: 8.835[s]
+
+t: 0.000, n_step: 6, fidelity: 1.000e+00, elapsed_time: 7.366[s]
+
+t: 0.000, n_step: 7, fidelity: 1.000e+00, elapsed_time: 7.598[s]
+
+t: 0.000, n_step: 8, fidelity: 1.000e+00, elapsed_time: 8.766[s]
+
+t: 0.000, n_step: 9, fidelity: 1.000e+00, elapsed_time: 7.870[s]
+
+t: 0.000, n_step: 10, fidelity: 1.000e+00, elapsed_time: 7.640[s]
+
