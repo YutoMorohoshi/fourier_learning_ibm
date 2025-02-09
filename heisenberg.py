@@ -240,11 +240,9 @@ class HeisenbergModel:
         U = scipy.sparse.linalg.expm(-1j * self.H.to_matrix(sparse=True) * t)
 
         ghz_circuit = self.get_ghz_circuit(phase=0)
-        # ghz_op = Operator(ghz_circuit)
         ghz_op = Operator.from_circuit(ghz_circuit)
 
         ghz_circuit_with_phase = self.get_ghz_circuit(phase=phase)
-        # ghz_op_with_phase = Operator(ghz_circuit_with_phase)
         ghz_op_with_phase = Operator.from_circuit(ghz_circuit_with_phase)
 
         U_all = ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
@@ -269,7 +267,7 @@ class HeisenbergModel:
 
         return qc
 
-    def get_circuit(self, total_time, n_step, phase=0, initial_layout=None):
+    def get_circuit(self, total_time, n_step, phase=0):
         t = total_time / n_step
 
         # ノードに 'is_entangled' 属性を追加
