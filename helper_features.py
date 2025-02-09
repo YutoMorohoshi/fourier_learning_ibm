@@ -6,8 +6,6 @@ import os
 from heisenberg import (
     HeisenbergModel,
     get_graph,
-    # get_positions,
-    # get_initial_layout,
 )
 from qiskit import transpile
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler, Batch
@@ -68,10 +66,21 @@ def run_job(config):
             circuit_phase2 = heisenberg.get_circuit(times[k], n_step, phase=2)
             circuit_phase3 = heisenberg.get_circuit(times[k], n_step, phase=3)
 
-            exec_circuit_phase0 = transpile(circuit_phase0, backend)
-            exec_circuit_phase1 = transpile(circuit_phase1, backend)
-            exec_circuit_phase2 = transpile(circuit_phase2, backend)
-            exec_circuit_phase3 = transpile(circuit_phase3, backend)
+            initial_layout = list(
+                range(n_qubits)
+            )  # Use physical qubits [0, 1, ..., n_qubits-1]
+            exec_circuit_phase0 = transpile(
+                circuit_phase0, backend, initial_layout=initial_layout
+            )
+            exec_circuit_phase1 = transpile(
+                circuit_phase1, backend, initial_layout=initial_layout
+            )
+            exec_circuit_phase2 = transpile(
+                circuit_phase2, backend, initial_layout=initial_layout
+            )
+            exec_circuit_phase3 = transpile(
+                circuit_phase3, backend, initial_layout=initial_layout
+            )
 
             circuits_phase0[f"sample{i}"][f"f_{k}"] = circuit_phase0
             circuits_phase1[f"sample{i}"][f"f_{k}"] = circuit_phase1
@@ -83,6 +92,35 @@ def run_job(config):
             exec_circuits_phase3[f"sample{i}"][f"f_{k}"] = exec_circuit_phase3
     print()
 
+    # check a circuit
+    sample_id = 2
+    feature_id = 5
+    print("Circuit example:")
+    print("before transpile")
+    print(
+        f"circuit depth: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}"
+    )
+    print(
+        f"count_ops: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n"
+    )
+    circuits_phase0[f"sample{sample_id}"][f"f_{feature_id}"].draw(
+        output="mpl",
+        idle_wires=False,
+        fold=-1,  # fold=-1 is used to disable folding
+    )
+    print("after transpile")
+    print(
+        f"circuit depth: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}"
+    )
+    print(
+        f"count_ops: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n"
+    )
+    exec_circuits_phase0[f"sample{sample_id}"][f"f_{feature_id}"].draw(
+        output="mpl",
+        idle_wires=False,
+        fold=-1,  # fold=-1 is used to disable folding
+    )
+
     # Run jobs in batch
     job_ids = []  # For QPU
     jobs = (
@@ -93,6 +131,7 @@ def run_job(config):
         sampler = Sampler()
 
         for i in range(n_samples):
+
             print(f"Submitting circuits to backend for sample {i}/{n_samples}")
             exec_circuits_per_sample = []
             exec_circuits_per_sample += [
@@ -118,7 +157,7 @@ def run_job(config):
     return batch, jobs, job_ids
 
 
-def get_prob0(result, n_qubits):
+def _get_prob0(result, n_qubits):
     meas_counts = result.data.meas.get_counts()
     num_shots = result.data.meas.num_shots
 
@@ -164,10 +203,10 @@ def get_features(config, jobs):
             results_phase2 = jobs[i].result()[2 * n_features : 3 * n_features]
             results_phase3 = jobs[i].result()[3 * n_features :]
 
-            prob_phase0 = get_prob0(results_phase0[k], n_qubits)
-            prob_phase1 = get_prob0(results_phase1[k], n_qubits)
-            prob_phase2 = get_prob0(results_phase2[k], n_qubits)
-            prob_phase3 = get_prob0(results_phase3[k], n_qubits)
+            prob_phase0 = _get_prob0(results_phase0[k], n_qubits)
+            prob_phase1 = _get_prob0(results_phase1[k], n_qubits)
+            prob_phase2 = _get_prob0(results_phase2[k], n_qubits)
+            prob_phase3 = _get_prob0(results_phase3[k], n_qubits)
 
             probs_phase0[f"sample{i}"][f"f_{k}"] = prob_phase0
             probs_phase1[f"sample{i}"][f"f_{k}"] = prob_phase1

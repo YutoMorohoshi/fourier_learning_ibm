@@ -14,7 +14,7 @@ import json
 import math
 
 
-def setup_backend(qpu_name: str = "ibm_fez", method: str = None):
+def setup_backend(qpu_name: str = "ibm_marrakesh", method: str = None):
     ########################################################
     # Option1: Use IBM Quantum backend.
     ########################################################
