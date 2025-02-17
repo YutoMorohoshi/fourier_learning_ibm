@@ -7,51 +7,81 @@
     {
         "t":0.3490658504,
         "n_step":1,
-        "sta_fidelity":0.9736985377
+        "sta_fidelity":0.9619409972
     },
     {
         "t":0.6981317008,
-        "n_step":2,
-        "sta_fidelity":0.9498459924
+        "n_step":1,
+        "sta_fidelity":0.9601518001
     },
     {
         "t":1.0471975512,
-        "n_step":2,
-        "sta_fidelity":0.9451060374
+        "n_step":1,
+        "sta_fidelity":0.949618765
     },
     {
         "t":1.3962634016,
-        "n_step":3,
-        "sta_fidelity":0.9212128693
+        "n_step":2,
+        "sta_fidelity":0.9249530027
     },
     {
         "t":1.745329252,
-        "n_step":3,
-        "sta_fidelity":0.9093440789
+        "n_step":2,
+        "sta_fidelity":0.9243844342
     },
     {
         "t":2.0943951024,
-        "n_step":4,
-        "sta_fidelity":0.8890452574
+        "n_step":2,
+        "sta_fidelity":0.9213042727
     },
     {
         "t":2.4434609528,
-        "n_step":5,
-        "sta_fidelity":0.8721483242
+        "n_step":2,
+        "sta_fidelity":0.9055797907
     },
     {
         "t":2.7925268032,
-        "n_step":5,
-        "sta_fidelity":0.8560617109
+        "n_step":3,
+        "sta_fidelity":0.8853690376
     },
     {
         "t":3.1415926536,
-        "n_step":6,
-        "sta_fidelity":0.835666608
+        "n_step":3,
+        "sta_fidelity":0.8786860096
     },
     {
         "t":3.490658504,
-        "n_step":7,
-        "sta_fidelity":0.8219900243
+        "n_step":3,
+        "sta_fidelity":0.8718004543
+    },
+    {
+        "t":3.8397243544,
+        "n_step":3,
+        "sta_fidelity":0.8591339417
+    },
+    {
+        "t":4.1887902048,
+        "n_step":4,
+        "sta_fidelity":0.8469890328
+    },
+    {
+        "t":4.5378560552,
+        "n_step":4,
+        "sta_fidelity":0.8342974598
+    },
+    {
+        "t":4.8869219056,
+        "n_step":5,
+        "sta_fidelity":0.8158566568
+    },
+    {
+        "t":5.235987756,
+        "n_step":5,
+        "sta_fidelity":0.8099369477
+    },
+    {
+        "t":5.5850536064,
+        "n_step":5,
+        "sta_fidelity":0.801990508
     }
 ]
