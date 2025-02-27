@@ -21,7 +21,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def run_job(config):
+def run_job(config, sim_type="noiseless"):
     circuits_phase0 = {}
     circuits_phase1 = {}
     circuits_phase2 = {}
@@ -40,8 +40,22 @@ def run_job(config):
     n_step_array = config["n_step_array"]
     backend = config["backend"]
 
+    if sim_type == "noiseless":
+        path = f"results/fourier_feature_sim_noiseless/"
+    elif sim_type == "noisy":
+        path = f"results/fourier_feature_sim_noisy/"
+
+    # 保存用のファイルを初期化
+    with open(f"results/run_job/temp_progress.txt", "w") as f:
+        f.write("")  # ファイルを空にする
+
     for i in range(n_samples):
-        print(f"Preparing circuits for sample {i}/{n_samples}")
+        # 途中経過を表示 + ファイルに保存
+        progress_report = f"Preparing circuits for sample {i}/{n_samples}"
+        print(progress_report)
+        with open(path + "temp_progress.txt", "a") as f:
+            f.write(progress_report + "\n")
+
         Js = all_Js[i]
         G = get_graph(n_qubits, Js)
 
@@ -109,26 +123,44 @@ def run_job(config):
     # check a circuit
     sample_id = 2
     feature_id = 5
-    print("Circuit example:")
-    print("before transpile")
-    print(
-        f"circuit depth: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}"
-    )
-    print(
-        f"count_ops: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n"
-    )
+
+    with open(path + "temp_progress.txt", "a") as f:
+        f.write(f"Circuit example:\n")
+        f.write(f"before transpile\n")
+        f.write(
+            f"circuit depth: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}\n"
+        )
+        f.write(
+            f"count_ops: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n\n"
+        )
+        f.write(f"after transpile\n")
+        f.write(
+            f"circuit depth: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}\n"
+        )
+        f.write(
+            f"count_ops: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n\n"
+        )
+
+    # print("Circuit example:")
+    # print("before transpile")
+    # print(
+    #     f"circuit depth: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}"
+    # )
+    # print(
+    #     f"count_ops: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n"
+    # )
     circuits_phase0[f"sample{sample_id}"][f"f_{feature_id}"].draw(
         output="mpl",
         idle_wires=False,
         fold=-1,  # fold=-1 is used to disable folding
     )
-    print("after transpile")
-    print(
-        f"circuit depth: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}"
-    )
-    print(
-        f"count_ops: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n"
-    )
+    # print("after transpile")
+    # print(
+    #     f"circuit depth: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}"
+    # )
+    # print(
+    #     f"count_ops: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n"
+    # )
     exec_circuits_phase0[f"sample{sample_id}"][f"f_{feature_id}"].draw(
         output="mpl",
         idle_wires=False,
@@ -145,8 +177,9 @@ def run_job(config):
         sampler = Sampler(mode=batch)
 
         for i in range(n_samples):
-
-            print(f"Submitting circuits to backend for sample {i}/{n_samples}")
+            with open(path + "temp_progress.txt", "a") as f:
+                f.write(f"Submitting circuits to backend for sample {i}/{n_samples}\n")
+            # print(f"Submitting circuits to backend for sample {i}/{n_samples}")
             exec_circuits_per_sample = []
             exec_circuits_per_sample += [
                 exec_circuits_phase0[f"sample{i}"][f"f_{k}"] for k in range(n_features)
