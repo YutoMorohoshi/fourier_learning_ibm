@@ -11,6 +11,16 @@ from heisenberg import (
     get_graph,
 )
 
+import cupy as cp
+import cupyx.scipy.linalg
+
+# import cupyx.scipy.sparse as cusparse
+# import cupyx.scipy.sparse.linalg as cusparse_linalg
+import time
+import numpy as np
+
+# ※必要に応じて qiskit やその他のモジュールもインポートしてください
+
 
 def imag_tebd(model_params, L, beta):
     chi_max = 100
@@ -73,6 +83,43 @@ def full_diag(n_qubits, Js, beta):
     return expected_value
 
 
+def full_diag_gpu(n_qubits, Js, beta):
+    # 初期状態の準備
+    # |psi> = |0011...1100> (中心の量子ビットが1で、その他は0)
+    index = ["0"] * (n_qubits // 4) + ["1"] * (n_qubits // 2) + ["0"] * (n_qubits // 4)
+    index = "".join(index)
+    psi = Statevector.from_label(index)
+
+    # GPU上で計算するため、状態ベクトルを cupy 配列に変換
+    psi_gpu = cp.asarray(psi.data)
+
+    # ハミルトニアンの準備
+    G = get_graph(n_qubits, Js)
+    heisenberg = HeisenbergModel(n_qubits, G)
+    # H = heisenberg.H
+    H = heisenberg.get_hamiltonian()
+
+    # state is big endian, so we need to reverse the qubits of the Hamiltonian
+    H = Operator(H).reverse_qargs().to_matrix()
+
+    # cupy の密行列に変換
+    H = cp.asarray(H)
+
+    # # calculate f(H) = exp(-beta * H)
+    start = time.time()
+    fH = cupyx.scipy.linalg.expm(-beta * H)  # GPU 上で計算
+
+    end = time.time()
+    elapsed_time = end - start
+    print(f"Elapsed time for diagonalization: {elapsed_time:.2f}[s]")
+
+    # 期待値 <psi|exp(-beta * H)|psi> を計算
+    expected_value = cp.vdot(psi_gpu, fH @ psi_gpu).real
+
+    # 必要に応じてホスト側の numpy スカラーに変換し、さらに float に変換
+    return cp.asnumpy(expected_value).item()
+
+
 def calculate_expected_value(L, Js):
     """
     L: int
@@ -104,7 +151,8 @@ def calculate_expected_value(L, Js):
     expected_value_tebd = imag_tebd(model_params, L, beta)
 
     if L <= L_diag_upper_bound:
-        expected_value_diag = full_diag(n_qubits=L, Js=Js, beta=beta)
+        # expected_value_diag = full_diag(n_qubits=L, Js=Js, beta=beta)
+        expected_value_diag = full_diag_gpu(n_qubits=L, Js=Js, beta=beta)
         diff = abs(expected_value_tebd - expected_value_diag)
     else:
         expected_value_diag = None

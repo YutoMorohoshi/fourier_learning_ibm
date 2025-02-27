@@ -5,8 +5,10 @@ import math
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.quantum_info.operators import Operator
-from qiskit.quantum_info import Statevector, SparsePauliOp
+from qiskit.quantum_info import Statevector, DensityMatrix, SparsePauliOp
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
+import cupy as cp
+import cupyx.scipy.linalg as csl
 
 
 def get_graph(n_qubits, Js):
@@ -278,15 +280,91 @@ class HeisenbergModel:
 
         # Create GHZ state
         qc.compose(self.get_ghz_circuit(phase=0), inplace=True)
-        # qc.barrier()
+        qc.barrier()
 
         # Apply time-evolution
         qc.compose(self.get_trotter_circuit(t, n_step), inplace=True)
+        qc.barrier()
 
         # Uncompute GHZ state
         qc.compose(self.get_ghz_circuit(phase=phase).inverse(), inplace=True)
+        qc.barrier()
 
         # Measure
         qc.measure_all()
 
         return qc
+
+
+class HeisenbergModelGPU(HeisenbergModel):
+    def exact_simulation(self, t, phase=0):
+        """
+        Compute the exact evolution of the Heisenberg model using the GHZ state.
+        Exact means that we compute the matrix exponential of the Hamiltonian, not Trotterized.
+
+        Args:
+            t (float): total time
+            phase (int): phase of the GHZ state (0, 1, 2, or 3)
+
+        Returns:
+            final_state (cupy.ndarray): final state of the system as a density matrix
+        """
+        initial_state = DensityMatrix.from_label("0" * self.n_qubits)
+        initial_state = cp.asarray(initial_state.data)  # GPU に転送
+
+        # ハミルトニアンは dense として渡す
+        H_dense = self.H.to_matrix(sparse=False)
+        U_evo = csl.expm(-1j * cp.asarray(H_dense) * t)  # GPU に転送
+
+        ghz_circuit = self.get_ghz_circuit(phase=0)
+        ghz_op = Operator.from_circuit(ghz_circuit)
+        U_ghz = cp.asarray(ghz_op.data)  # GPU に転送
+
+        ghz_circuit_with_phase = self.get_ghz_circuit(phase=phase)
+        ghz_op_with_phase = Operator.from_circuit(ghz_circuit_with_phase)
+        U_ghz_with_phase = cp.asarray(ghz_op_with_phase.data)  # GPU に転送
+
+        U_all = U_ghz_with_phase.conj().T @ U_evo @ U_ghz
+        # initial_state is big endian, but when using evolve(), we don't need to reverse the qubits
+
+        # ToDo: reverse が必要か確認
+        final_state = U_all @ initial_state @ U_all.conj().T
+
+        # CPU に転送し、DensityMatrix に変換
+        final_state = DensityMatrix(cp.asnumpy(final_state))
+
+        # トレースが 1 にならない場合は、1 に正規化
+        trace_value = np.trace(final_state.data).real
+        if not np.isclose(trace_value, 1):
+            final_state = final_state / trace_value
+
+        return final_state
+
+
+def sqrtm_svd(rho, eps=1e-8):
+    # 厳密なエルミート化
+    rho = 0.5 * (rho + rho.conj().T)
+    # SVD を用いる
+    U, s, Vh = cp.linalg.svd(rho)
+    # NaN を 0 に置換、eps 未満は 0 に
+    s = cp.nan_to_num(s, nan=0.0)
+    s = cp.where(s < eps, 0, s)
+    return (U * cp.sqrt(s)) @ U.conj().T
+
+
+def fidelity_gpu(rho1, rho2, eps=1e-8):
+    """
+    CuPy 配列の密度行列 rho1, rho2 に対して
+    F(rho1, rho2) = Tr[ sqrt( sqrt(rho1) rho2 sqrt(rho1) ) ] を計算する関数
+
+    rho1, rho2: Qiskit の DensityMatrix オブジェクト
+    """
+
+    # rho1, rho2 を CuPy 配列に変換
+    rho1 = cp.asarray(rho1.data)
+    rho2 = cp.asarray(rho2.data)
+    sqrt_rho1 = sqrtm_svd(rho1, eps=eps)
+    product = sqrt_rho1 @ rho2 @ sqrt_rho1
+    product_sqrt = sqrtm_svd(product, eps=eps)
+    trace_val = cp.trace(product_sqrt)
+    return cp.real(trace_val) ** 2

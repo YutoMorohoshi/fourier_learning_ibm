@@ -33,14 +33,12 @@ def run_job(config):
 
     n_qubits = config["n_qubits"]
     n_samples = config["n_samples"]
+    n_shots = config["n_shots"]
     n_features = config["n_features"]
     times = config["times"]
     all_Js = config["all_Js"]
     n_step_array = config["n_step_array"]
     backend = config["backend"]
-
-    # Whether the backend is a simulator or not
-    is_sim = True if backend.name == "aer_simulator" else False
 
     for i in range(n_samples):
         print(f"Preparing circuits for sample {i}/{n_samples}")
@@ -70,16 +68,32 @@ def run_job(config):
                 range(n_qubits)
             )  # Use physical qubits [0, 1, ..., n_qubits-1]
             exec_circuit_phase0 = transpile(
-                circuit_phase0, backend, initial_layout=initial_layout
+                circuit_phase0,
+                backend,
+                initial_layout=initial_layout,
+                layout_method="trivial",
+                optimization_level=0,
             )
             exec_circuit_phase1 = transpile(
-                circuit_phase1, backend, initial_layout=initial_layout
+                circuit_phase1,
+                backend,
+                initial_layout=initial_layout,
+                layout_method="trivial",
+                optimization_level=0,
             )
             exec_circuit_phase2 = transpile(
-                circuit_phase2, backend, initial_layout=initial_layout
+                circuit_phase2,
+                backend,
+                initial_layout=initial_layout,
+                layout_method="trivial",
+                optimization_level=0,
             )
             exec_circuit_phase3 = transpile(
-                circuit_phase3, backend, initial_layout=initial_layout
+                circuit_phase3,
+                backend,
+                initial_layout=initial_layout,
+                layout_method="trivial",
+                optimization_level=0,
             )
 
             circuits_phase0[f"sample{i}"][f"f_{k}"] = circuit_phase0
@@ -128,7 +142,7 @@ def run_job(config):
     )  # For AerSimulator. we can't use job ids with AerSimulator. Instead, we store the jobs in a list.
 
     with Batch(backend=backend) as batch:
-        sampler = Sampler()
+        sampler = Sampler(mode=batch)
 
         for i in range(n_samples):
 
@@ -147,11 +161,11 @@ def run_job(config):
                 exec_circuits_phase3[f"sample{i}"][f"f_{k}"] for k in range(n_features)
             ]
 
-            job = sampler.run(exec_circuits_per_sample)
+            job = sampler.run(exec_circuits_per_sample, shots=n_shots)
 
-            if is_sim:
+            if "simulator" in backend.name:  # AerSimulator
                 jobs.append(job)
-            else:
+            else:  # QPU
                 job_ids.append(job.job_id())
 
     return batch, jobs, job_ids
@@ -181,7 +195,7 @@ def get_features(config, jobs):
     all_expected_values = config["all_expected_values"]
 
     # Whether the backend is a simulator or not
-    is_sim = True if backend.name == "aer_simulator" else False
+    is_sim = True if "aer_simulator" in backend.name else False
 
     # Whether the backend is noisy simulator or not
     is_sim_noisy = True if backend.options.noise_model else False

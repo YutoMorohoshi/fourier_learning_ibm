@@ -14,12 +14,14 @@ import json
 import math
 
 
-def setup_backend(qpu_name: str = "ibm_marrakesh", method: str = None):
+def setup_backend(
+    qpu_name: str = "ibm_marrakesh", device: str = "CPU", method: str = "statevector"
+):
     ########################################################
     # Option1: Use IBM Quantum backend.
     ########################################################
 
-    # Set up the Qiskit Runtime service (this is a one-time setup)
+    # Set up the Qiskit Runtime service (this is a first one-time setup)
     # QiskitRuntimeService.save_account(
     #     token="YOUR_API_TOKEN",
     #     channel="ibm_quantum",
@@ -52,24 +54,17 @@ def setup_backend(qpu_name: str = "ibm_marrakesh", method: str = None):
             matrix_product_state_truncation_threshold=1e-8,
             noise_model=noise_backend,
         )
-    elif method == "density_matrix":
-        backend_sim_noiseless = AerSimulator(device="GPU", method="density_matrix")
-        backend_sim_noisy = AerSimulator(
-            device="GPU", method="density_matrix", noise_model=noise_backend
-        )
-    elif method == "tensor_network":
-        backend_sim_noiseless = AerSimulator(device="GPU", method="tensor_network")
-        backend_sim_noisy = AerSimulator(
-            device="GPU", method="tensor_network", noise_model=noise_backend
-        )
     else:
-        backend_sim_noiseless = AerSimulator(device="GPU", method="statevector")
+        backend_sim_noiseless = AerSimulator(device=device, method=method)
         backend_sim_noisy = AerSimulator(
             noise_model=noise_backend,
-            device="GPU",
-            method="statevector",
+            device=device,
+            method=method,
             blocking_enable=True,
             blocking_qubits=20,
+            # batched_shots_gpu=True,
+            # batched_shots_gpu_max_qubits=16,
+            cuStateVec_enable=True,
         )
     print(f"Using backend noiseless simulator: {backend_sim_noiseless}\n")
     print(f"Using backend noisy simulator: {backend_sim_noisy}")
