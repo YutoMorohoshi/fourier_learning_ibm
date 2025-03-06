@@ -1,0 +1,125 @@
+Preparing circuits for sample 0/5
+Sample 0, feature 0: generation and transpile took 0.18 sec
+Sample 0, feature 1: generation and transpile took 0.19 sec
+Sample 0, feature 2: generation and transpile took 0.22 sec
+Sample 0, feature 3: generation and transpile took 0.23 sec
+Sample 0, feature 4: generation and transpile took 0.97 sec
+Sample 0, feature 5: generation and transpile took 0.28 sec
+
+Circuit example:
+before transpile
+circuit depth: 57
+count_ops: OrderedDict([('cx', 274), ('rx', 112), ('rz', 112), ('rzx', 112), ('measure', 52), ('h', 2), ('barrier', 1)])
+
+after transpile
+circuit depth: 162
+count_ops: OrderedDict([('sx', 978), ('rz', 783), ('cz', 378), ('measure', 52), ('x', 11), ('barrier', 1)])
+
+Sample 0, feature 6: generation and transpile took 1.19 sec
+Sample 0, feature 7: generation and transpile took 0.28 sec
+Sample 0, feature 8: generation and transpile took 0.33 sec
+Sample 0, feature 9: generation and transpile took 0.32 sec
+Sample 0, feature 10: generation and transpile took 0.33 sec
+Sample 0, feature 11: generation and transpile took 0.33 sec
+Sample 0, feature 12: generation and transpile took 0.37 sec
+Sample 0, feature 13: generation and transpile took 0.37 sec
+Sample 0, feature 14: generation and transpile took 0.37 sec
+Sample 0, feature 15: generation and transpile took 0.43 sec
+Sample 0, feature 16: generation and transpile took 0.43 sec
+Sample 0, feature 17: generation and transpile took 1.37 sec
+Sample 0, feature 18: generation and transpile took 0.50 sec
+Sample 0, feature 19: generation and transpile took 0.49 sec
+Sample 0: total circuit generation and transpile time 25.34 sec
+Preparing circuits for sample 1/5
+Sample 1, feature 0: generation and transpile took 0.14 sec
+Sample 1, feature 1: generation and transpile took 0.18 sec
+Sample 1, feature 2: generation and transpile took 0.23 sec
+Sample 1, feature 3: generation and transpile took 0.24 sec
+Sample 1, feature 4: generation and transpile took 0.23 sec
+Sample 1, feature 5: generation and transpile took 0.27 sec
+Sample 1, feature 6: generation and transpile took 0.28 sec
+Sample 1, feature 7: generation and transpile took 0.26 sec
+Sample 1, feature 8: generation and transpile took 0.33 sec
+Sample 1, feature 9: generation and transpile took 1.26 sec
+Sample 1, feature 10: generation and transpile took 0.33 sec
+Sample 1, feature 11: generation and transpile took 0.32 sec
+Sample 1, feature 12: generation and transpile took 0.38 sec
+Sample 1, feature 13: generation and transpile took 0.39 sec
+Sample 1, feature 14: generation and transpile took 0.37 sec
+Sample 1, feature 15: generation and transpile took 0.44 sec
+Sample 1, feature 16: generation and transpile took 0.44 sec
+Sample 1, feature 17: generation and transpile took 0.43 sec
+Sample 1, feature 18: generation and transpile took 0.49 sec
+Sample 1, feature 19: generation and transpile took 0.49 sec
+Sample 1: total circuit generation and transpile time 7.53 sec
+Preparing circuits for sample 2/5
+Sample 2, feature 0: generation and transpile took 0.14 sec
+Sample 2, feature 1: generation and transpile took 1.17 sec
+Sample 2, feature 2: generation and transpile took 0.23 sec
+Sample 2, feature 3: generation and transpile took 0.22 sec
+Sample 2, feature 4: generation and transpile took 0.23 sec
+Sample 2, feature 5: generation and transpile took 0.27 sec
+Sample 2, feature 6: generation and transpile took 0.27 sec
+Sample 2, feature 7: generation and transpile took 0.27 sec
+Sample 2, feature 8: generation and transpile took 0.33 sec
+Sample 2, feature 9: generation and transpile took 0.32 sec
+Sample 2, feature 10: generation and transpile took 0.33 sec
+Sample 2, feature 11: generation and transpile took 0.32 sec
+Sample 2, feature 12: generation and transpile took 0.37 sec
+Sample 2, feature 13: generation and transpile took 1.33 sec
+Sample 2, feature 14: generation and transpile took 0.38 sec
+Sample 2, feature 15: generation and transpile took 0.44 sec
+Sample 2, feature 16: generation and transpile took 0.43 sec
+Sample 2, feature 17: generation and transpile took 0.43 sec
+Sample 2, feature 18: generation and transpile took 0.49 sec
+Sample 2, feature 19: generation and transpile took 0.49 sec
+Sample 2: total circuit generation and transpile time 8.47 sec
+Preparing circuits for sample 3/5
+Sample 3, feature 0: generation and transpile took 0.14 sec
+Sample 3, feature 1: generation and transpile took 0.18 sec
+Sample 3, feature 2: generation and transpile took 0.22 sec
+Sample 3, feature 3: generation and transpile took 0.22 sec
+Sample 3, feature 4: generation and transpile took 0.22 sec
+Sample 3, feature 5: generation and transpile took 0.26 sec
+Sample 3, feature 6: generation and transpile took 1.20 sec
+Sample 3, feature 7: generation and transpile took 0.27 sec
+Sample 3, feature 8: generation and transpile took 0.32 sec
+Sample 3, feature 9: generation and transpile took 0.32 sec
+Sample 3, feature 10: generation and transpile took 0.32 sec
+Sample 3, feature 11: generation and transpile took 0.32 sec
+Sample 3, feature 12: generation and transpile took 0.37 sec
+Sample 3, feature 13: generation and transpile took 0.37 sec
+Sample 3, feature 14: generation and transpile took 0.37 sec
+Sample 3, feature 15: generation and transpile took 0.44 sec
+Sample 3, feature 16: generation and transpile took 0.44 sec
+Sample 3, feature 17: generation and transpile took 0.44 sec
+Sample 3, feature 18: generation and transpile took 1.44 sec
+Sample 3, feature 19: generation and transpile took 0.51 sec
+Sample 3: total circuit generation and transpile time 8.39 sec
+Preparing circuits for sample 4/5
+Sample 4, feature 0: generation and transpile took 0.15 sec
+Sample 4, feature 1: generation and transpile took 0.19 sec
+Sample 4, feature 2: generation and transpile took 0.22 sec
+Sample 4, feature 3: generation and transpile took 0.22 sec
+Sample 4, feature 4: generation and transpile took 0.22 sec
+Sample 4, feature 5: generation and transpile took 0.27 sec
+Sample 4, feature 6: generation and transpile took 0.26 sec
+Sample 4, feature 7: generation and transpile took 0.26 sec
+Sample 4, feature 8: generation and transpile took 0.31 sec
+Sample 4, feature 9: generation and transpile took 0.32 sec
+Sample 4, feature 10: generation and transpile took 0.32 sec
+Sample 4, feature 11: generation and transpile took 0.33 sec
+Sample 4, feature 12: generation and transpile took 1.35 sec
+Sample 4, feature 13: generation and transpile took 0.38 sec
+Sample 4, feature 14: generation and transpile took 0.38 sec
+Sample 4, feature 15: generation and transpile took 0.43 sec
+Sample 4, feature 16: generation and transpile took 0.43 sec
+Sample 4, feature 17: generation and transpile took 0.48 sec
+Sample 4, feature 18: generation and transpile took 0.49 sec
+Sample 4, feature 19: generation and transpile took 0.50 sec
+Sample 4: total circuit generation and transpile time 7.53 sec
+Submitted circuits to backend for sample 0/5 in 3.43 sec
+Submitted circuits to backend for sample 1/5 in 10.80 sec
+Submitted circuits to backend for sample 2/5 in 11.15 sec
+Submitted circuits to backend for sample 3/5 in 5170.62 sec
+Submitted circuits to backend for sample 4/5 in 12.08 sec

@@ -11,17 +11,19 @@ from qiskit import transpile
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler, Batch
 from qiskit_aer import AerSimulator
 from qiskit_aer.noise import NoiseModel
+from qiskit.visualization import plot_circuit_layout
 import pickle
 import networkx as nx
 from datetime import datetime, timezone
 import json
 import math
 import warnings
+import time
 
 warnings.filterwarnings("ignore")
 
 
-def run_job(config, sim_type="noiseless"):
+def run_job(config, backend_qpu, sim_type="noiseless"):
     circuits_phase0 = {}
     circuits_phase1 = {}
     circuits_phase2 = {}
@@ -44,15 +46,78 @@ def run_job(config, sim_type="noiseless"):
         path = f"results/fourier_feature_sim_noiseless/"
     elif sim_type == "noisy":
         path = f"results/fourier_feature_sim_noisy/"
+    elif sim_type == "qpu":
+        path = f"results/fourier_feature_qpu/"
+
+    if n_qubits <= 15:
+        initial_layout = list(
+            range(n_qubits)
+        )  # Use physical qubits [0, 1, ..., n_qubits-1]
+    elif n_qubits == 52:
+        initial_layout = [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            19,
+            35,
+            34,
+            33,
+            32,
+            31,
+            30,
+            29,
+            28,
+            27,
+            26,
+            25,
+            37,
+            45,
+            46,
+            47,
+            57,
+            67,
+            66,
+            65,
+            77,
+            85,
+            86,
+            87,
+            97,
+            107,
+            106,
+            105,
+            117,
+            125,
+            124,
+            123,
+            136,
+            143,
+            144,
+            145,
+        ]
 
     # 保存用のファイルを初期化
-    with open(f"results/run_job/temp_progress.txt", "w") as f:
+    with open(path + "temp_progress.txt", "w") as f:
         f.write("")  # ファイルを空にする
 
     for i in range(n_samples):
+        # 開始時刻を記録
+        sample_start = time.time()
         # 途中経過を表示 + ファイルに保存
         progress_report = f"Preparing circuits for sample {i}/{n_samples}"
-        print(progress_report)
         with open(path + "temp_progress.txt", "a") as f:
             f.write(progress_report + "\n")
 
@@ -70,46 +135,36 @@ def run_job(config, sim_type="noiseless"):
         exec_circuits_phase2[f"sample{i}"] = {}
         exec_circuits_phase3[f"sample{i}"] = {}
 
-        # Compute the Fourier features for different times
+        # 各特徴量ごとの回路生成とトランスパイル時間を計測
         for k in range(n_features):
+            feat_start = time.time()
+            # Compute the Fourier features for different times
             n_step = n_step_array[k]
             circuit_phase0 = heisenberg.get_circuit(times[k], n_step, phase=0)
             circuit_phase1 = heisenberg.get_circuit(times[k], n_step, phase=1)
             circuit_phase2 = heisenberg.get_circuit(times[k], n_step, phase=2)
             circuit_phase3 = heisenberg.get_circuit(times[k], n_step, phase=3)
 
-            initial_layout = list(
-                range(n_qubits)
-            )  # Use physical qubits [0, 1, ..., n_qubits-1]
             exec_circuit_phase0 = transpile(
                 circuit_phase0,
-                backend,
+                backend_qpu,
                 initial_layout=initial_layout,
-                layout_method="trivial",
-                optimization_level=0,
             )
             exec_circuit_phase1 = transpile(
                 circuit_phase1,
-                backend,
+                backend_qpu,
                 initial_layout=initial_layout,
-                layout_method="trivial",
-                optimization_level=0,
             )
             exec_circuit_phase2 = transpile(
                 circuit_phase2,
-                backend,
+                backend_qpu,
                 initial_layout=initial_layout,
-                layout_method="trivial",
-                optimization_level=0,
             )
             exec_circuit_phase3 = transpile(
                 circuit_phase3,
-                backend,
+                backend_qpu,
                 initial_layout=initial_layout,
-                layout_method="trivial",
-                optimization_level=0,
             )
-
             circuits_phase0[f"sample{i}"][f"f_{k}"] = circuit_phase0
             circuits_phase1[f"sample{i}"][f"f_{k}"] = circuit_phase1
             circuits_phase2[f"sample{i}"][f"f_{k}"] = circuit_phase2
@@ -118,54 +173,56 @@ def run_job(config, sim_type="noiseless"):
             exec_circuits_phase1[f"sample{i}"][f"f_{k}"] = exec_circuit_phase1
             exec_circuits_phase2[f"sample{i}"][f"f_{k}"] = exec_circuit_phase2
             exec_circuits_phase3[f"sample{i}"][f"f_{k}"] = exec_circuit_phase3
+
+            feat_end = time.time()
+            duration = feat_end - feat_start
+            with open(path + "temp_progress.txt", "a") as f:
+                f.write(
+                    f"Sample {i}, feature {k}: generation and transpile took {duration:.2f} sec\n"
+                )
+
+            # 最初のサンプルの 5 つ目の特徴量のみをサンプリング
+            if i == 0 and k == 5:
+                # 使用する量子ビットの配置を pdf で保存
+                plot_circuit_layout(
+                    exec_circuit_phase0,
+                    backend_qpu,
+                    view="virtual",  # 論理量子ビットの配置
+                ).savefig(path + f"{n_qubits}Q/circuit_layout_virtual.pdf")
+                plot_circuit_layout(
+                    exec_circuit_phase0,
+                    backend_qpu,
+                    view="physical",  # 物理量子ビットの配置
+                ).savefig(path + f"{n_qubits}Q/circuit_layout_physical.pdf")
+
+                # 量子回路を pdf で保存
+                circuit_phase0.draw(
+                    output="mpl",
+                    idle_wires=False,
+                    fold=-1,
+                    filename=path + f"{n_qubits}Q/circuit.pdf",
+                )
+                exec_circuit_phase0.draw(
+                    output="mpl",
+                    idle_wires=False,
+                    fold=-1,
+                    filename=path + f"{n_qubits}Q/exec_circuit.pdf",
+                )
+
+                with open(path + "temp_progress.txt", "a") as f:
+                    f.write(f"\nCircuit example:\n")
+                    f.write(f"before transpile\n")
+                    f.write(f"circuit depth: {circuit_phase0.depth()}\n")
+                    f.write(f"count_ops: {circuit_phase0.count_ops()}\n\n")
+                    f.write(f"after transpile\n")
+                    f.write(f"circuit depth: {exec_circuit_phase0.depth()}\n")
+                    f.write(f"count_ops: {exec_circuit_phase0.count_ops()}\n\n")
+        sample_end = time.time()
+        with open(path + "temp_progress.txt", "a") as f:
+            f.write(
+                f"Sample {i}: total circuit generation and transpile time {sample_end - sample_start:.2f} sec\n"
+            )
     print()
-
-    # check a circuit
-    sample_id = 2
-    feature_id = 5
-
-    with open(path + "temp_progress.txt", "a") as f:
-        f.write(f"Circuit example:\n")
-        f.write(f"before transpile\n")
-        f.write(
-            f"circuit depth: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}\n"
-        )
-        f.write(
-            f"count_ops: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n\n"
-        )
-        f.write(f"after transpile\n")
-        f.write(
-            f"circuit depth: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}\n"
-        )
-        f.write(
-            f"count_ops: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n\n"
-        )
-
-    # print("Circuit example:")
-    # print("before transpile")
-    # print(
-    #     f"circuit depth: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}"
-    # )
-    # print(
-    #     f"count_ops: {circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n"
-    # )
-    circuits_phase0[f"sample{sample_id}"][f"f_{feature_id}"].draw(
-        output="mpl",
-        idle_wires=False,
-        fold=-1,  # fold=-1 is used to disable folding
-    )
-    # print("after transpile")
-    # print(
-    #     f"circuit depth: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].depth()}"
-    # )
-    # print(
-    #     f"count_ops: {exec_circuits_phase0[f'sample{sample_id}'][f'f_{feature_id}'].count_ops()}\n"
-    # )
-    exec_circuits_phase0[f"sample{sample_id}"][f"f_{feature_id}"].draw(
-        output="mpl",
-        idle_wires=False,
-        fold=-1,  # fold=-1 is used to disable folding
-    )
 
     # Run jobs in batch
     job_ids = []  # For QPU
@@ -177,9 +234,7 @@ def run_job(config, sim_type="noiseless"):
         sampler = Sampler(mode=batch)
 
         for i in range(n_samples):
-            with open(path + "temp_progress.txt", "a") as f:
-                f.write(f"Submitting circuits to backend for sample {i}/{n_samples}\n")
-            # print(f"Submitting circuits to backend for sample {i}/{n_samples}")
+            start = time.time()
             exec_circuits_per_sample = []
             exec_circuits_per_sample += [
                 exec_circuits_phase0[f"sample{i}"][f"f_{k}"] for k in range(n_features)
@@ -194,6 +249,7 @@ def run_job(config, sim_type="noiseless"):
                 exec_circuits_phase3[f"sample{i}"][f"f_{k}"] for k in range(n_features)
             ]
 
+            # Run the circuits
             job = sampler.run(exec_circuits_per_sample, shots=n_shots)
 
             if "simulator" in backend.name:  # AerSimulator
@@ -201,7 +257,48 @@ def run_job(config, sim_type="noiseless"):
             else:  # QPU
                 job_ids.append(job.job_id())
 
+            end = time.time()
+            elapsed_time = end - start
+            with open(path + "temp_progress.txt", "a") as f:
+                f.write(
+                    f"Submitted circuits to backend for sample {i}/{n_samples} in {elapsed_time:.2f} sec\n"
+                )
+
     return batch, jobs, job_ids
+
+    # sampler = Sampler(mode=backend)
+
+    # for i in range(n_samples):
+    #     start = time.time()
+    #     exec_circuits_per_sample = []
+    #     exec_circuits_per_sample += [
+    #         exec_circuits_phase0[f"sample{i}"][f"f_{k}"] for k in range(n_features)
+    #     ]
+    #     exec_circuits_per_sample += [
+    #         exec_circuits_phase1[f"sample{i}"][f"f_{k}"] for k in range(n_features)
+    #     ]
+    #     exec_circuits_per_sample += [
+    #         exec_circuits_phase2[f"sample{i}"][f"f_{k}"] for k in range(n_features)
+    #     ]
+    #     exec_circuits_per_sample += [
+    #         exec_circuits_phase3[f"sample{i}"][f"f_{k}"] for k in range(n_features)
+    #     ]
+
+    #     job = sampler.run(exec_circuits_per_sample, shots=n_shots)
+
+    #     if "simulator" in backend.name:  # AerSimulator
+    #         jobs.append(job)
+    #     else:  # QPU
+    #         job_ids.append(job.job_id())
+
+    #     end = time.time()
+    #     elapsed_time = end - start
+    #     with open(path + "temp_progress.txt", "a") as f:
+    #         f.write(
+    #             f"Submitted circuits to backend for sample {i}/{n_samples} in {elapsed_time:.2f} sec\n"
+    #         )
+
+    # return jobs, job_ids
 
 
 def _get_prob0(result, n_qubits):
