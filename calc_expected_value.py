@@ -19,8 +19,6 @@ import cupyx.scipy.linalg
 import time
 import numpy as np
 
-# ※必要に応じて qiskit やその他のモジュールもインポートしてください
-
 
 def imag_tebd(model_params, L, beta):
     chi_max = 100

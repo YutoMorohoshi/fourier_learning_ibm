@@ -47,12 +47,22 @@ def setup_backend(
             method="matrix_product_state",
             matrix_product_state_max_bond_dimension=100,
             matrix_product_state_truncation_threshold=1e-8,
+            device=device,
+            blocking_enable=True,
+            blocking_qubits=20,
+            batched_shots_gpu=True,
+            batched_shots_gpu_max_qubits=32,
         )
         backend_sim_noisy = AerSimulator(
             method="matrix_product_state",
             matrix_product_state_max_bond_dimension=100,
             matrix_product_state_truncation_threshold=1e-8,
             noise_model=noise_backend,
+            device=device,
+            blocking_enable=True,
+            blocking_qubits=20,
+            batched_shots_gpu=True,
+            batched_shots_gpu_max_qubits=32,
         )
     else:
         backend_sim_noiseless = AerSimulator(device=device, method=method)
@@ -62,11 +72,11 @@ def setup_backend(
             method=method,
             blocking_enable=True,
             blocking_qubits=20,
-            # batched_shots_gpu=True,
-            # batched_shots_gpu_max_qubits=16,
+            batched_shots_gpu=True,
+            batched_shots_gpu_max_qubits=32,
             cuStateVec_enable=True,
         )
     print(f"Using backend noiseless simulator: {backend_sim_noiseless}\n")
-    print(f"Using backend noisy simulator: {backend_sim_noisy}")
+    print(f"Using backend noisy simulator: {backend_sim_noisy}\n")
 
     return backend_qpu, backend_sim_noiseless, backend_sim_noisy

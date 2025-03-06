@@ -99,12 +99,6 @@ def get_positions(n_qubits):
     return positions
 
 
-# def get_initial_layout(n_qubits, qpu_name):
-#     if qpu_name == "ibm_marrakesh":
-#         initial_layout = list(range(140, 140 + n_qubits))
-#     return initial_layout
-
-
 class HeisenbergModel:
     def __init__(self, n_qubits, graph):
         self.n_qubits = n_qubits
@@ -248,6 +242,7 @@ class HeisenbergModel:
         ghz_op_with_phase = Operator.from_circuit(ghz_circuit_with_phase)
 
         U_all = ghz_op_with_phase.adjoint().data @ U @ ghz_op.data
+
         # initial_state is big endian, but when using evolve(), we don't need to reverse the qubits
         final_state = initial_state.evolve(U_all)
 
@@ -280,15 +275,15 @@ class HeisenbergModel:
 
         # Create GHZ state
         qc.compose(self.get_ghz_circuit(phase=0), inplace=True)
-        qc.barrier()
+        # qc.barrier()
 
         # Apply time-evolution
         qc.compose(self.get_trotter_circuit(t, n_step), inplace=True)
-        qc.barrier()
+        # qc.barrier()
 
         # Uncompute GHZ state
         qc.compose(self.get_ghz_circuit(phase=phase).inverse(), inplace=True)
-        qc.barrier()
+        # qc.barrier()
 
         # Measure
         qc.measure_all()
@@ -325,9 +320,8 @@ class HeisenbergModelGPU(HeisenbergModel):
         U_ghz_with_phase = cp.asarray(ghz_op_with_phase.data)  # GPU に転送
 
         U_all = U_ghz_with_phase.conj().T @ U_evo @ U_ghz
-        # initial_state is big endian, but when using evolve(), we don't need to reverse the qubits
 
-        # ToDo: reverse が必要か確認
+        # diagonalization
         final_state = U_all @ initial_state @ U_all.conj().T
 
         # CPU に転送し、DensityMatrix に変換
