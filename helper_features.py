@@ -53,6 +53,29 @@ def run_job(config, backend_qpu, sim_type="noiseless"):
         initial_layout = list(
             range(n_qubits)
         )  # Use physical qubits [0, 1, ..., n_qubits-1]
+    elif n_qubits == 20:
+        initial_layout = [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            19,
+            35,
+            34,
+            33,
+        ]
     elif n_qubits == 52:
         initial_layout = [
             0,
