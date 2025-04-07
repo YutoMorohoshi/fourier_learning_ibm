@@ -267,40 +267,6 @@ def run_job(config, backend_qpu, sim_type="noiseless"):
 
     return batch, jobs, job_ids
 
-    # sampler = Sampler(mode=backend)
-
-    # for i in range(n_samples):
-    #     start = time.time()
-    #     exec_circuits_per_sample = []
-    #     exec_circuits_per_sample += [
-    #         exec_circuits_phase0[f"sample{i}"][f"f_{k}"] for k in range(n_features)
-    #     ]
-    #     exec_circuits_per_sample += [
-    #         exec_circuits_phase1[f"sample{i}"][f"f_{k}"] for k in range(n_features)
-    #     ]
-    #     exec_circuits_per_sample += [
-    #         exec_circuits_phase2[f"sample{i}"][f"f_{k}"] for k in range(n_features)
-    #     ]
-    #     exec_circuits_per_sample += [
-    #         exec_circuits_phase3[f"sample{i}"][f"f_{k}"] for k in range(n_features)
-    #     ]
-
-    #     job = sampler.run(exec_circuits_per_sample, shots=n_shots)
-
-    #     if "simulator" in backend.name:  # AerSimulator
-    #         jobs.append(job)
-    #     else:  # QPU
-    #         job_ids.append(job.job_id())
-
-    #     end = time.time()
-    #     elapsed_time = end - start
-    #     with open(path + "temp_progress.txt", "a") as f:
-    #         f.write(
-    #             f"Submitted circuits to backend for sample {i}/{n_samples} in {elapsed_time:.2f} sec\n"
-    #         )
-
-    # return jobs, job_ids
-
 
 def _get_prob0(result, n_qubits):
     meas_counts = result.data.meas.get_counts()
