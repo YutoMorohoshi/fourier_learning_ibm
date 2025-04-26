@@ -6,7 +6,7 @@ This is a code to reproduce the results of [Learning functions of Hamiltonians w
 ## How to use
 ### 1. Determine parameters
 
-Initially, we determine two parameters, specifically Trotter steps $n_{\text{step}}$ and the maximum evolution time $t_K$. This process is carried out using the [01_get_param.ipynb](01_get_param.ipynb) notebook.
+Initially, we determine two parameters, specifically Trotter steps $n_{\text{step}}$ and the maximum evolution time $t_K$. This process is carried out using the [01_get_nstep.ipynb](01_get_nstep.ipynb) notebook.
 
 ### 2. Create dataset
 
