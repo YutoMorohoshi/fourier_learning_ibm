@@ -82,13 +82,13 @@ def full_diag(n_qubits, Js, beta):
 
 
 def full_diag_gpu(n_qubits, Js, beta):
-    # 初期状態の準備
-    # |psi> = |0011...1100> (中心の量子ビットが1で、その他は0)
+    # prepare the initial state
+    # |psi> = |0011...1100> (center qubits are 1 and the rest are 0)
     index = ["0"] * (n_qubits // 4) + ["1"] * (n_qubits // 2) + ["0"] * (n_qubits // 4)
     index = "".join(index)
     psi = Statevector.from_label(index)
 
-    # GPU上で計算するため、状態ベクトルを cupy 配列に変換
+    # To calculate on GPU, convert the state vector to cupy array
     psi_gpu = cp.asarray(psi.data)
 
     # ハミルトニアンの準備
@@ -100,21 +100,21 @@ def full_diag_gpu(n_qubits, Js, beta):
     # state is big endian, so we need to reverse the qubits of the Hamiltonian
     H = Operator(H).reverse_qargs().to_matrix()
 
-    # cupy の密行列に変換
+    # convert H to cupy array
     H = cp.asarray(H)
 
     # # calculate f(H) = exp(-beta * H)
     start = time.time()
-    fH = cupyx.scipy.linalg.expm(-beta * H)  # GPU 上で計算
+    fH = cupyx.scipy.linalg.expm(-beta * H)  # calculated on GPU
 
     end = time.time()
     elapsed_time = end - start
     print(f"Elapsed time for diagonalization: {elapsed_time:.2f}[s]")
 
-    # 期待値 <psi|exp(-beta * H)|psi> を計算
+    # calculate the expected value <psi|exp(-beta * H)|psi>
     expected_value = cp.vdot(psi_gpu, fH @ psi_gpu).real
 
-    # 必要に応じてホスト側の numpy スカラーに変換し、さらに float に変換
+    # convert to numpy array, and convert to float
     return cp.asnumpy(expected_value).item()
 
 
@@ -133,12 +133,12 @@ def calculate_expected_value(L, Js):
 
     L_diag_upper_bound = 12
 
-    # モデルの設定
+    # configure a model
     model_params = {
         "L": L,
         "S": 0.5,
-        "conserve": "Sz",  # 粒子数保存
-        # TenPy では 1/2 スピンのモデルを考えるため、厳密対角化との帳尻を合わせるために Js は 4 倍する
+        "conserve": "Sz",  # conserve the Sz component of the total spin
+        # In TenPy, we consider the model with spin 1/2, so we need to multiply Js by 4 to match the exact calculation
         "Jx": Js * 4,
         "Jy": Js * 4,
         "Jz": Js * 4,

@@ -24,6 +24,17 @@ warnings.filterwarnings("ignore")
 
 
 def run_job(config, backend_qpu, sim_type="noiseless"):
+    """
+    Run the job on the backend and return the job ids.
+    Args:
+        config: A dictionary containing the configuration parameters.
+        backend_qpu: The backend to run the job on.
+        sim_type: The type of simulation (noiseless, noisy, or qpu).
+    Returns:
+        batch: The batch object for the job.
+        jobs: A list of job objects for the simulator.
+        job_ids: A list of job ids for the QPU.
+    """
     circuits_phase0 = {}
     circuits_phase1 = {}
     circuits_phase2 = {}
@@ -110,14 +121,14 @@ def run_job(config, backend_qpu, sim_type="noiseless"):
     else:
         initial_layout = initial_layout_52[:n_qubits]
 
-    # 保存用のファイルを初期化
+    # initialize the file for saving progress
     with open(path + "temp_progress.txt", "w") as f:
-        f.write("")  # ファイルを空にする
+        f.write("")  # clear the file
 
     for i in range(n_samples):
-        # 開始時刻を記録
+        # save the start time
         sample_start = time.time()
-        # 途中経過を表示 + ファイルに保存
+        # show the progress and save it to a file
         progress_report = f"Preparing circuits for sample {i}/{n_samples}"
         with open(path + "temp_progress.txt", "a") as f:
             f.write(progress_report + "\n")
@@ -136,7 +147,7 @@ def run_job(config, backend_qpu, sim_type="noiseless"):
         exec_circuits_phase2[f"sample{i}"] = {}
         exec_circuits_phase3[f"sample{i}"] = {}
 
-        # 各特徴量ごとの回路生成とトランスパイル時間を計測
+        # measure the time for generating and transpiling circuits
         for k in range(n_features):
             feat_start = time.time()
             # Compute the Fourier features for different times
@@ -182,21 +193,21 @@ def run_job(config, backend_qpu, sim_type="noiseless"):
                     f"Sample {i}, feature {k}: generation and transpile took {duration:.2f} sec\n"
                 )
 
-            # 最初のサンプルの 5 つ目の特徴量のみをサンプリング
+            # sample only the 5th feature of the 0th sample
             if i == 0 and k == 5:
-                # 使用する量子ビットの配置を pdf で保存
+                # save the transpiled circuit layout as pdf
                 plot_circuit_layout(
                     exec_circuit_phase0,
                     backend_qpu,
-                    view="virtual",  # 論理量子ビットの配置
+                    view="virtual",  # logical qubits
                 ).savefig(path + f"{n_qubits}Q/circuit_layout_virtual.pdf")
                 plot_circuit_layout(
                     exec_circuit_phase0,
                     backend_qpu,
-                    view="physical",  # 物理量子ビットの配置
+                    view="physical",  # physical qubits
                 ).savefig(path + f"{n_qubits}Q/circuit_layout_physical.pdf")
 
-                # 量子回路を pdf で保存
+                # save the circuit as pdf
                 circuit_phase0.draw(
                     output="mpl",
                     idle_wires=False,
@@ -269,6 +280,14 @@ def run_job(config, backend_qpu, sim_type="noiseless"):
 
 
 def _get_prob0(result, n_qubits):
+    """
+    Extract the probability of measuring all qubits in state |0> from the result object.
+    Args:
+        result: The result object from the quantum circuit execution.
+        n_qubits: The number of qubits in the circuit.
+    Returns:
+        prob0: The probability of measuring all qubits in state |0>.
+    """
     meas_counts = result.data.meas.get_counts()
     num_shots = result.data.meas.num_shots
 
@@ -278,6 +297,14 @@ def _get_prob0(result, n_qubits):
 
 
 def get_features(config, jobs):
+    """
+    Post-process the results of the quantum circuits and extract the features.
+    Args:
+        config: A dictionary containing the configuration parameters.
+        jobs: A list of job objects for the simulator.
+    Returns:
+        df: A DataFrame containing the extracted features.
+    """
     data = []
     probs_phase0 = {}
     probs_phase1 = {}

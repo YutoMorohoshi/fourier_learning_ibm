@@ -12,33 +12,29 @@ import cupyx.scipy.linalg as csl
 
 
 def get_graph(n_qubits, Js):
-    # グラフを作成
+    # Create a graph
     G = nx.Graph()
 
-    # ノードを追加
+    # add nodes
     nodes = list(range(n_qubits))
     G.add_nodes_from(nodes)
 
-    # ノードに 'hadamard' 属性を追加
+    # add 'hadamard' attribute to the nodes
     for node in nodes:
         if node == n_qubits // 2 - 1:
             G.nodes[node]["hadamard"] = True
         else:
             G.nodes[node]["hadamard"] = False
 
-    # エッジを追加
+    # add edges between nearest neighbors
     edges = [(i, i + 1) for i in range(n_qubits - 1)]
     G.add_edges_from(edges)
 
-    # エッジに相互作用強度 (J_{ij}) を追加
+    # add 'J' attribute (interaction strength) to the edges
     for edge in G.edges:
         G.edges[edge]["J"] = Js[edge[0]]
-        # G.edges[edge]["J"] = rng.uniform(-1, 1)
-        # G.edges[edge]["J"] = rng.uniform(
-        #     -1 / (3 * (n_qubits - 1)), 1 / (3 * (n_qubits - 1))
-        # )
 
-    # エッジに 'cnot' 属性を追加
+    # add 'cnot' attribute to the edges
     # State |0011...1100> (center qubits are 1 and the rest are 0)
     leftmost = n_qubits // 4
     rightmost = leftmost + n_qubits // 2 - 1
@@ -48,7 +44,7 @@ def get_graph(n_qubits, Js):
 
     for i in range(hadamard - leftmost + 1):
         if i == 0:
-            # Hadamard より右側の処理
+            # processing on the right side of Hadamard
             control = hadamard
             target = hadamard + 1
             right_start = target
@@ -58,11 +54,11 @@ def get_graph(n_qubits, Js):
                 "target": target,
             }
         else:
-            # Hadamard より左側の処理
+            # processing on the left side of Hadamard
             control = left_start
             target = left_start - 1
 
-            # target が leftmost を超えていない場合のみ CNOT を作用させる
+            # apply CNOT only if target is not less than leftmost
             if target >= leftmost:
                 G.edges[(control, target)]["cnot"] = {
                     "order": i,
@@ -71,11 +67,11 @@ def get_graph(n_qubits, Js):
                 }
                 left_start = target
 
-            # Hadamard より右側の処理
+            # processing on the right side of Hadamard
             control = right_start
             target = right_start + 1
 
-            # target が rightmost を超えていない場合のみ CNOT を作用させる
+            # apply CNOT only if target is not greater than rightmost
             if target <= rightmost:
                 G.edges[(control, target)]["cnot"] = {
                     "order": i,
@@ -84,7 +80,7 @@ def get_graph(n_qubits, Js):
                 }
                 right_start = target
 
-        # それ以外のエッジには None の 'cnot_order' 属性を追加
+        # add None of 'cnot_order' attribute to the other edges
         for edge in G.edges:
             if "cnot" not in G.edges[edge]:
                 G.edges[edge]["cnot"] = {"order": None, "control": None, "target": None}
@@ -93,7 +89,7 @@ def get_graph(n_qubits, Js):
 
 
 def get_positions(n_qubits):
-    # 等間隔に配置するためのカスタム座標を定義
+    # define custom coordinates to place qubits at equal intervals
     positions = {i: (i, 0) for i in range(n_qubits)}
 
     return positions
@@ -108,7 +104,7 @@ class HeisenbergModel:
         # sparse big-endian matrix
         self.H = self.get_hamiltonian()
 
-        # first_half_pairs の始まりは、n_qubits を 4 で割った余りが 0 なら 1, そうでなければ 0
+        # first_half_pairs starts from 1 if n_qubits % 4 == 0, otherwise starts from 0
         if self.n_qubits % 4 == 0:
             self.first_half_pairs = [(i, i + 1) for i in range(1, self.n_qubits - 1, 2)]
             self.first_Js = [self.Js[i] for i in range(1, self.n_qubits - 1, 2)]
@@ -136,7 +132,7 @@ class HeisenbergModel:
 
                 # Convert to little-endian for Qiskit's SparsePauliOp
                 # See: https://docs.quantum.ibm.com/api/qiskit/qiskit.quantum_info.SparsePauliOp#from_list
-                # これは必要
+                # This is necessary because Qiskit uses little-endian order for qubits
                 pauli_string.reverse()
 
                 strings.append("".join(pauli_string))
@@ -145,7 +141,7 @@ class HeisenbergModel:
 
     def get_hamiltonian(self):
         pauli_strings = self.get_pauli_strings()
-        coefficients = np.repeat(self.Js, 3)  # Js を各パウリ演算子に対応させる
+        coefficients = np.repeat(self.Js, 3)  # 3 for X, Y, Z
 
         H = SparsePauliOp.from_list(
             [(pauli_string, J) for pauli_string, J in zip(pauli_strings, coefficients)]
@@ -174,7 +170,7 @@ class HeisenbergModel:
 
             qc.cx(i, j)
 
-            # ノードの 'is_entangled' 属性を更新
+            # update the 'is_entangled' attribute of the nodes
             self.G.nodes[i]["is_entangled"] = True
             self.G.nodes[j]["is_entangled"] = True
 
@@ -199,7 +195,7 @@ class HeisenbergModel:
         # qc = QuantumCircuit(self.n_qubits // 2)
         qc = QuantumCircuit(self.n_qubits)
 
-        # hadamard 属性を持つノードを抽出
+        # extract the node with 'hadamard' attribute
         hadamard_node = None
         for node in self.G.nodes:
             if self.G.nodes[node]["hadamard"]:
@@ -214,7 +210,7 @@ class HeisenbergModel:
         elif phase == 3:
             qc.s(hadamard_node)
             qc.z(hadamard_node)
-        # 'cnot' 'order' に従って、cnot をかける順番を決める
+        # determine the order of cnot gates based on the 'cnot' 'order' attribute
         for i in range(max_order + 1):
             for j, k in self.G.edges:
                 if self.G.edges[(j, k)]["cnot"]["order"] == i:
@@ -267,7 +263,7 @@ class HeisenbergModel:
     def get_circuit(self, total_time, n_step, phase=0):
         t = total_time / n_step
 
-        # ノードに 'is_entangled' 属性を追加
+        # add 'is_entangled' attribute to the nodes
         for node in self.G.nodes:
             self.G.nodes[node]["is_entangled"] = False
 
@@ -305,29 +301,29 @@ class HeisenbergModelGPU(HeisenbergModel):
             final_state (cupy.ndarray): final state of the system as a density matrix
         """
         initial_state = DensityMatrix.from_label("0" * self.n_qubits)
-        initial_state = cp.asarray(initial_state.data)  # GPU に転送
+        initial_state = cp.asarray(initial_state.data)  # send to GPU
 
-        # ハミルトニアンは dense として渡す
+        # send Hamiltonian as dense matrix to GPU
         H_dense = self.H.to_matrix(sparse=False)
-        U_evo = csl.expm(-1j * cp.asarray(H_dense) * t)  # GPU に転送
+        U_evo = csl.expm(-1j * cp.asarray(H_dense) * t)  # send to GPU
 
         ghz_circuit = self.get_ghz_circuit(phase=0)
         ghz_op = Operator.from_circuit(ghz_circuit)
-        U_ghz = cp.asarray(ghz_op.data)  # GPU に転送
+        U_ghz = cp.asarray(ghz_op.data)  # send to GPU
 
         ghz_circuit_with_phase = self.get_ghz_circuit(phase=phase)
         ghz_op_with_phase = Operator.from_circuit(ghz_circuit_with_phase)
-        U_ghz_with_phase = cp.asarray(ghz_op_with_phase.data)  # GPU に転送
+        U_ghz_with_phase = cp.asarray(ghz_op_with_phase.data)  # send to GPU
 
         U_all = U_ghz_with_phase.conj().T @ U_evo @ U_ghz
 
-        # diagonalization
+        # calculate the final state
         final_state = U_all @ initial_state @ U_all.conj().T
 
-        # CPU に転送し、DensityMatrix に変換
+        # send to CPU, and convert to DensityMatrix
         final_state = DensityMatrix(cp.asnumpy(final_state))
 
-        # トレースが 1 にならない場合は、1 に正規化
+        # if the trace is not 1, normalize to 1
         trace_value = np.trace(final_state.data).real
         if not np.isclose(trace_value, 1):
             final_state = final_state / trace_value
@@ -336,11 +332,12 @@ class HeisenbergModelGPU(HeisenbergModel):
 
 
 def sqrtm_svd(rho, eps=1e-8):
-    # 厳密なエルミート化
+    # create a Hermitian matrix
     rho = 0.5 * (rho + rho.conj().T)
-    # SVD を用いる
+
+    # Singular Value Decomposition (SVD)
     U, s, Vh = cp.linalg.svd(rho)
-    # NaN を 0 に置換、eps 未満は 0 に
+    # convert NaN to 0, and values less than eps to 0
     s = cp.nan_to_num(s, nan=0.0)
     s = cp.where(s < eps, 0, s)
     return (U * cp.sqrt(s)) @ U.conj().T
@@ -348,13 +345,12 @@ def sqrtm_svd(rho, eps=1e-8):
 
 def fidelity_gpu(rho1, rho2, eps=1e-8):
     """
-    CuPy 配列の密度行列 rho1, rho2 に対して
-    F(rho1, rho2) = Tr[ sqrt( sqrt(rho1) rho2 sqrt(rho1) ) ] を計算する関数
+    calculate F(rho1, rho2) = Tr[ sqrt( sqrt(rho1) rho2 sqrt(rho1) ) ] for rho1, rho2 of CuPy arrays
 
-    rho1, rho2: Qiskit の DensityMatrix オブジェクト
+    rho1, rho2: DensityMatrix objects of Qiskit
     """
 
-    # rho1, rho2 を CuPy 配列に変換
+    # convert rho1, rho2 to CuPy arrays
     rho1 = cp.asarray(rho1.data)
     rho2 = cp.asarray(rho2.data)
     sqrt_rho1 = sqrtm_svd(rho1, eps=eps)
